@@ -49,61 +49,68 @@
 
     {{-- Content Section --}}
     <div class="p-4 md:p-5">
-        {{-- Title & Description --}}
-        <div class="mb-4">
-            <h3 class="font-bold text-gray-900 text-lg md:text-xl mb-2 line-clamp-1 group-hover:text-indigo-600 transition-colors">
-                {{ $menu->name }}
-            </h3>
-            <p class="text-sm text-gray-500 leading-relaxed line-clamp-2 mb-2">
-                {{ $menu->description }}
-            </p>
-            
-            {{-- Meta Info --}}
-            <div class="flex items-center gap-3 text-xs">
-                @if($menu->stock !== null && !$isOutOfStock)
-                <span class="inline-flex items-center text-gray-400">
-                    <i class="fas fa-box mr-1"></i>
-                    Stok: {{ $menu->stock }}
-                </span>
-                @elseif(!$isOutOfStock)
-                <span class="inline-flex items-center text-green-500 font-medium">
-                    <i class="fas fa-check-circle mr-1"></i>
-                    Tersedia
-                </span>
-                @endif
-                
-                @if($menu->details)
-                <button class="text-indigo-600 font-medium hover:text-indigo-700 transition-colors view-details inline-flex items-center" 
-                        data-details="{{ $menu->details }}">
-                    <i class="fas fa-info-circle mr-1"></i>Info Detail
-                </button>
-                @endif
+        {{-- Title & Price --}}
+        <div class="flex justify-between items-start mb-3">
+            <div class="flex-1">
+                <h3 class="font-bold text-gray-900 text-lg md:text-xl mb-1 line-clamp-1 group-hover:text-indigo-600 transition-colors">
+                    {{ $menu->name }}
+                </h3>
+            </div>
+            <div class="ml-3 flex-shrink-0">
+                <p class="font-black text-indigo-600 text-xl whitespace-nowrap">Rp {{ number_format($menu->price, 0, ',', '.') }}</p>
             </div>
         </div>
         
-        {{-- Action Section --}}
-        <div class="flex items-center gap-3">
-            {{-- Quantity Controls --}}
-            <div class="flex items-center bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl px-1 py-1 gap-1 flex-1">
-                <button class="quantity-btn decrease bg-white w-9 h-9 rounded-lg flex items-center justify-center hover:bg-indigo-600 hover:text-white transition-all shadow-sm" 
+        {{-- Description --}}
+        <p class="text-sm text-gray-500 leading-relaxed line-clamp-2 mb-3">
+            {{ $menu->description }}
+        </p>
+        
+        {{-- Meta Info --}}
+        <div class="flex items-center gap-3 text-xs mb-4">
+            @if($menu->stock !== null && !$isOutOfStock)
+            <span class="inline-flex items-center text-gray-400">
+                <i class="fas fa-box mr-1"></i>
+                Stok: {{ $menu->stock }}
+            </span>
+            @elseif(!$isOutOfStock)
+            <span class="inline-flex items-center text-green-500 font-medium">
+                <i class="fas fa-check-circle mr-1"></i>
+                Tersedia
+            </span>
+            @endif
+            
+            @if($menu->details)
+            <button class="text-indigo-600 font-medium hover:text-indigo-700 transition-colors view-details inline-flex items-center" 
+                    data-details="{{ $menu->details }}">
+                <i class="fas fa-info-circle mr-1"></i>Info Detail
+            </button>
+            @endif
+        </div>
+        
+        {{-- Action Section - Compact & Clean --}}
+        <div class="flex items-stretch gap-2">
+            {{-- Quantity Controls - Compact --}}
+            <div class="flex items-center bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                <button class="quantity-btn decrease bg-transparent w-10 h-10 flex items-center justify-center hover:bg-indigo-600 hover:text-white transition-all active:scale-95" 
                         data-menu-id="{{ $menu->id }}"
                         {{ $isOutOfStock ? 'disabled' : '' }}>
                     <i class="fas fa-minus text-sm"></i>
                 </button>
-                <span class="quantity-display flex-1 text-center font-black text-gray-900 text-lg" data-menu-id="{{ $menu->id }}">0</span>
-                <button class="quantity-btn increase bg-white w-9 h-9 rounded-lg flex items-center justify-center hover:bg-indigo-600 hover:text-white transition-all shadow-sm" 
+                <span class="quantity-display w-12 text-center font-bold text-gray-900 text-base bg-white" data-menu-id="{{ $menu->id }}">0</span>
+                <button class="quantity-btn increase bg-transparent w-10 h-10 flex items-center justify-center hover:bg-indigo-600 hover:text-white transition-all active:scale-95" 
                         data-menu-id="{{ $menu->id }}"
                         {{ $isOutOfStock ? 'disabled' : '' }}>
                     <i class="fas fa-plus text-sm"></i>
                 </button>
             </div>
             
-            {{-- Add to Cart Button --}}
-            <button class="add-to-cart bg-gradient-to-r from-indigo-600 to-purple-600 text-white w-12 h-12 md:w-auto md:px-6 md:h-12 rounded-xl hover:shadow-2xl hover:scale-110 text-sm font-bold transition-all duration-300 flex items-center justify-center group" 
+            {{-- Add to Cart Button - Full Width --}}
+            <button class="add-to-cart bg-gradient-to-r from-indigo-600 to-purple-600 text-white flex-1 h-10 rounded-lg hover:shadow-lg hover:scale-105 text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2 active:scale-95" 
                     data-menu-id="{{ $menu->id }}"
                     {{ $isOutOfStock ? 'disabled' : '' }}>
-                <i class="fas fa-shopping-cart text-lg md:mr-2"></i>
-                <span class="hidden md:inline">Pesan</span>
+                <i class="fas fa-shopping-cart text-base"></i>
+                <span>Pesan</span>
             </button>
         </div>
     </div>

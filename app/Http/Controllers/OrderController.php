@@ -131,13 +131,13 @@ class OrderController extends Controller
             
             Log::info('Order transaction committed successfully');
             
+            // Optimized response - hanya data yang diperlukan
             return response()->json([
                 'success' => true,
                 'message' => 'Pesanan berhasil dibuat!',
                 'order' => [
                     'id' => $order->id,
-                    'order_number' => $order->order_code,
-                    'order_code' => $order->order_code,
+                    'order_code' => $order->order_code, // Hapus duplikasi order_number
                     'customer_name' => $order->customer_name,
                     'table_id' => $order->table_id,
                     'total_amount' => $order->total_amount,
@@ -204,11 +204,32 @@ class OrderController extends Controller
     
     public function getOrderStatus()
     {
-        $orders = Order::with('orderItems.menu')
-                    ->orderBy('created_at', 'desc')
-                    ->get();
+        // Optimized: hanya ambil field yang diperlukan, limit results
+        $orders = Order::select([
+                'id', 
+                'order_code', 
+                'customer_name', 
+                'table_id', 
+                'total_amount', 
+                'status', 
+                'payment_status',
+                'payment_method',
+                'created_at'
+            ])
+            ->with(['orderItems' => function($query) {
+                $query->select('id', 'order_id', 'menu_id', 'quantity', 'price')
+                    ->with(['menu' => function($q) {
+                        $q->select('id', 'name', 'price'); // Hanya field penting
+                    }]);
+            }])
+            ->orderBy('created_at', 'desc')
+            ->limit(50) // Limit untuk performa
+            ->get();
         
-        return response()->json($orders);
+        return response()->json([
+            'success' => true,
+            'orders' => $orders
+        ]);
     }
     
     public function customerOrderStatus()
@@ -222,25 +243,40 @@ class OrderController extends Controller
             'order_code' => 'required|string'
         ]);
         
-        $order = Order::where('order_code', $request->order_code)
-            ->with('orderItems.menu')
+        // Optimized: select hanya field yang diperlukan
+        $order = Order::select([
+                'id',
+                'order_code',
+                'customer_name',
+                'table_id',
+                'total_amount',
+                'status',
+                'payment_status',
+                'payment_method',
+                'created_at'
+            ])
+            ->where('order_code', $request->order_code)
+            ->with(['orderItems' => function($query) {
+                $query->select('id', 'order_id', 'menu_id', 'quantity', 'price')
+                    ->with(['menu' => function($q) {
+                        $q->select('id', 'name', 'price');
+                    }]);
+            }])
             ->first();
             
         if (!$order) {
             return response()->json([
                 'success' => false,
                 'message' => 'Pesanan tidak ditemukan. Pastikan kode pesanan benar.'
-            ]);
+            ], 404);
         }
         
+        // Optimized: hapus duplikasi data, format di frontend
         return response()->json([
             'success' => true,
             'order' => $order,
-            'order_items' => $order->orderItems,
             'status_text' => $order->getStatusText(),
-            'payment_status_text' => $order->getPaymentStatusText(),
-            'formatted_total' => 'Rp ' . number_format($order->total_amount, 0, ',', '.'),
-            'formatted_date' => $order->created_at->translatedFormat('d M Y H:i')
+            'payment_status_text' => $order->getPaymentStatusText()
         ]);
     }
     
