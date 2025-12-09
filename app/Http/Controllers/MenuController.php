@@ -10,32 +10,27 @@ class MenuController extends Controller
 {
     public function index(Request $request)
     {
-        // Stats untuk cards
         $stats = [
             'total_menus' => Menu::count(),
             'available_menus' => Menu::where('is_available', true)->count(),
             'out_of_stock' => Menu::where('stock', 0)->whereNotNull('stock')->count(),
             'best_sellers' => Menu::where('is_best_seller', true)->count(),
         ];
-        
-        // Query builder untuk menus
+
         $query = Menu::query();
-        
-        // Search functionality
+
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
-        
-        // Filter by category
+
         if ($request->has('category') && $request->category != '') {
             $query->where('category', $request->category);
         }
-        
-        // Filter by availability
+
         if ($request->has('availability') && $request->availability != '') {
             if ($request->availability === 'available') {
                 $query->where('is_available', true);
@@ -45,15 +40,13 @@ class MenuController extends Controller
                 $query->where('stock', 0)->whereNotNull('stock');
             }
         }
-        
-        // Filter by best seller
+
         if ($request->has('best_seller') && $request->best_seller == '1') {
             $query->where('is_best_seller', true);
         }
-        
-        // Pagination (10 items per page)
+
         $menus = $query->orderBy('created_at', 'desc')->paginate(10);
-        
+
         return view('admin.menus.index', compact('menus', 'stats'));
     }
 
@@ -64,11 +57,8 @@ class MenuController extends Controller
 
     public function store(Request $request)
     {
-        // Debug: lihat semua data yang dikirim
         \Log::info('=== MENU STORE REQUEST ===');
         \Log::info('All Request Data:', $request->all());
-        \Log::info('Best Seller:', ['checked' => $request->has('is_best_seller'), 'value' => $request->is_best_seller]);
-        \Log::info('Available:', ['checked' => $request->has('is_available'), 'value' => $request->is_available]);
 
         $request->validate([
             'name' => 'required|string|max:255',
@@ -81,25 +71,28 @@ class MenuController extends Controller
         ]);
 
         try {
-            // Handle image upload
+
             $imagePath = null;
+
             if ($request->hasFile('image')) {
+                // 1. Simpan ke storage/app/public/menu-images
                 $imagePath = $request->file('image')->store('menu-images', 'public');
+
+                // 2. Copy ke public_html/storage/menu-images
+                $source = storage_path('app/public/' . $imagePath);
+                $destination = base_path('../public_html/storage/' . $imagePath);
+
+                if (!file_exists(dirname($destination))) {
+                    mkdir(dirname($destination), 0775, true);
+                }
+
+                copy($source, $destination);
             }
 
-            // Handle stock management
             $stock = $request->has('manage_stock') ? ($request->stock ?? 0) : null;
-
-            // ✅ FIX: CHECKBOX HANDLING YANG BENAR
             $isBestSeller = $request->has('is_best_seller');
             $isAvailable = $request->has('is_available');
 
-            \Log::info('Final checkbox values:', [
-                'is_best_seller' => $isBestSeller,
-                'is_available' => $isAvailable
-            ]);
-
-            // Create the menu
             $menu = Menu::create([
                 'name' => $request->name,
                 'description' => $request->description,
@@ -111,8 +104,6 @@ class MenuController extends Controller
                 'is_best_seller' => $isBestSeller,
                 'is_available' => $isAvailable
             ]);
-
-            \Log::info('Menu created successfully! ID: ' . $menu->id);
 
             return redirect()->route('admin.menus.index')->with('success', 'Menu berhasil ditambahkan!');
 
@@ -143,26 +134,37 @@ class MenuController extends Controller
         ]);
 
         try {
+
             $imagePath = $menu->image;
+
             if ($request->hasFile('image')) {
-                // Delete old image
+
+                // Hapus file lama di storage
                 if ($menu->image) {
                     Storage::disk('public')->delete($menu->image);
+
+                    $oldPublic = base_path('../public_html/storage/' . $menu->image);
+                    if (file_exists($oldPublic)) {
+                        unlink($oldPublic);
+                    }
                 }
+
+                // Simpan file baru
                 $imagePath = $request->file('image')->store('menu-images', 'public');
+
+                $source = storage_path('app/public/' . $imagePath);
+                $destination = base_path('../public_html/storage/' . $imagePath);
+
+                if (!file_exists(dirname($destination))) {
+                    mkdir(dirname($destination), 0775, true);
+                }
+
+                copy($source, $destination);
             }
 
-            // Handle stock management
             $stock = $request->has('manage_stock') ? ($request->stock ?? 0) : null;
-
-            // ✅ FIX: CHECKBOX HANDLING YANG BENAR
             $isBestSeller = $request->has('is_best_seller');
             $isAvailable = $request->has('is_available');
-
-            \Log::info('Final checkbox values for update:', [
-                'is_best_seller' => $isBestSeller,
-                'is_available' => $isAvailable
-            ]);
 
             $menu->update([
                 'name' => $request->name,
@@ -175,8 +177,6 @@ class MenuController extends Controller
                 'is_best_seller' => $isBestSeller,
                 'is_available' => $isAvailable
             ]);
-
-            \Log::info('Menu updated successfully! ID: ' . $menu->id);
 
             return redirect()->route('admin.menus.index')->with('success', 'Menu berhasil diupdate!');
 
@@ -191,7 +191,13 @@ class MenuController extends Controller
         try {
             if ($menu->image) {
                 Storage::disk('public')->delete($menu->image);
+
+                $oldPublic = base_path('../public_html/storage/'.$menu->image);
+                if (file_exists($oldPublic)) {
+                    unlink($oldPublic);
+                }
             }
+
             $menu->delete();
 
             return redirect()->route('admin.menus.index')->with('success', 'Menu berhasil dihapus!');
@@ -208,27 +214,27 @@ class MenuController extends Controller
 
         if ($menu->stock !== null) {
             $action = $request->action;
-            
+
             if ($action === 'increase') {
                 $menu->increment('stock');
-                
+
                 if ($menu->stock > 0 && !$menu->is_available) {
                     $menu->update(['is_available' => true]);
                 }
-                
+
             } elseif ($action === 'decrease') {
                 if ($menu->stock > 0) {
                     $menu->decrement('stock');
-                    
+
                     if ($menu->stock === 0) {
                         $menu->update(['is_available' => false]);
                     }
                 }
             }
-            
+
             return redirect()->route('admin.menus.index')->with('success', 'Stok berhasil diupdate!');
         }
-        
+
         return redirect()->route('admin.menus.index')->with('error', 'Menu ini tidak dikelola stok!');
     }
 
@@ -238,7 +244,7 @@ class MenuController extends Controller
             $menu->update([
                 'is_available' => !$menu->is_available
             ]);
-            
+
             $status = $menu->is_available ? 'diaktifkan' : 'dinonaktifkan';
             return redirect()->route('admin.menus.index')->with('success', "Menu berhasil $status!");
         } catch (\Exception $e) {
