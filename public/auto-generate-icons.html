@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Auto Generate PWA Icons</title>
+</head>
+<body>
+    <h1>Generating PWA Icons...</h1>
+    <p id="status">Please wait...</p>
+    
+    <script>
+        const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
+        let generated = 0;
+        
+        function createAndDownloadIcon(size) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            
+            // Gradient background
+            const gradient = ctx.createLinearGradient(0, 0, 0, size);
+            gradient.addColorStop(0, '#667eea');
+            gradient.addColorStop(1, '#764ba2');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+            
+            // White icon
+            ctx.fillStyle = 'white';
+            ctx.font = `bold ${size * 0.5}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🍴', size / 2, size / 2);
+            
+            // Download
+            canvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `icon-${size}x${size}.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                generated++;
+                document.getElementById('status').textContent = 
+                    `Generated ${generated}/${sizes.length} icons...`;
+                
+                if (generated === sizes.length) {
+                    document.getElementById('status').innerHTML = 
+                        '<strong style="color: green;">✅ All icons generated!</strong><br>' +
+                        'Please move all downloaded icons to: <code>public/images/</code><br>' +
+                        '<button onclick="location.href=\'/admin/dashboard\'">Go to Dashboard</button>';
+                }
+            });
+        }
+        
+        // Auto generate on load
+        window.onload = () => {
+            sizes.forEach((size, index) => {
+                setTimeout(() => createAndDownloadIcon(size), index * 200);
+            });
+        };
+    </script>
+</body>
+</html>
