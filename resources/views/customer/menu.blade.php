@@ -1284,34 +1284,20 @@ use Illuminate\Support\Facades\Storage;
                                    placeholder="Masukkan nama Anda">
                         </div>
                         
-                        <!-- Payment Method Selection -->
+                        <!-- Payment Method Selection - Cash Only -->
                         <div class="mb-4">
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Metode Pembayaran *</label>
-                            <div class="space-y-2">
-                                <label class="flex items-center p-3 bg-white hover:bg-indigo-50 border-2 border-gray-200 hover:border-indigo-500 rounded-lg cursor-pointer transition-all">
-                                    <input type="radio" name="payment_method" value="qris" checked 
-                                           class="text-indigo-600 focus:ring-indigo-500 w-4 h-4">
-                                    <div class="ml-2.5">
-                                        <span class="font-medium text-gray-800 text-sm">QRIS</span>
-                                        <p class="text-xs text-gray-500">Scan & bayar dengan QRIS</p>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Metode Pembayaran</label>
+                            <div class="bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-200 rounded-xl p-4">
+                                <input type="hidden" name="payment_method" value="cash">
+                                <div class="flex items-center">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center mr-3 shadow-lg">
+                                        <i class="fas fa-money-bill-wave text-white text-xl"></i>
                                     </div>
-                                </label>
-                                <label class="flex items-center p-3 bg-white hover:bg-indigo-50 border-2 border-gray-200 hover:border-indigo-500 rounded-lg cursor-pointer transition-all">
-                                    <input type="radio" name="payment_method" value="bank_transfer"
-                                           class="text-indigo-600 focus:ring-indigo-500 w-4 h-4">
-                                    <div class="ml-2.5">
-                                        <span class="font-medium text-gray-800 text-sm">Transfer Bank</span>
-                                        <p class="text-xs text-gray-500">Transfer ke rekening kami</p>
+                                    <div>
+                                        <span class="font-bold text-gray-800 text-base block">Bayar Tunai di Kasir</span>
+                                        <p class="text-sm text-gray-600">Tunjukkan kode pesanan ke kasir untuk pembayaran</p>
                                     </div>
-                                </label>
-                                <label class="flex items-center p-3 bg-white hover:bg-indigo-50 border-2 border-gray-200 hover:border-indigo-500 rounded-lg cursor-pointer transition-all">
-                                    <input type="radio" name="payment_method" value="cash"
-                                           class="text-indigo-600 focus:ring-indigo-500 w-4 h-4">
-                                    <div class="ml-2.5">
-                                        <span class="font-medium text-gray-800 text-sm">Tunai</span>
-                                        <p class="text-xs text-gray-500">Bayar di kasir</p>
-                                    </div>
-                                </label>
+                                </div>
                             </div>
                         </div>
                         
@@ -1473,7 +1459,8 @@ use Illuminate\Support\Facades\Storage;
 
     <script>
     // ==================== VARIABLES ====================
-    let cart = {};
+    let cart = {}; // Cart yang sebenarnya (setelah klik "Pesan")
+    let tempQuantity = {}; // Temporary quantity (saat klik +/-)
     let currentOrderData = null;
     let currentSlide = 0;
     const slides = document.querySelectorAll('.carousel-slide');
@@ -1626,14 +1613,16 @@ use Illuminate\Support\Facades\Storage;
     function updateQuantityDisplay(menuId) {
         const display = document.querySelector(`.quantity-display[data-menu-id="${menuId}"]`);
         if (display) {
-            display.textContent = cart[menuId] || 0;
+            // Tampilkan tempQuantity (yang sedang dipilih), bukan cart
+            display.textContent = tempQuantity[menuId] || 0;
         }
     }
 
     function updateAllQuantityDisplays() {
         document.querySelectorAll('.quantity-display').forEach(display => {
             const menuId = display.dataset.menuId;
-            display.textContent = cart[menuId] || 0;
+            // Reset ke 0 karena tempQuantity sudah masuk cart
+            display.textContent = tempQuantity[menuId] || 0;
         });
     }
 
@@ -1661,17 +1650,25 @@ use Illuminate\Support\Facades\Storage;
             if (cart[menuId] > 0) {
                 const menuItem = document.querySelector(`.menu-item[data-menu-id="${menuId}"]`);
                 if (menuItem) {
-                    const priceElement = menuItem.querySelector('.font-bold.text-indigo-600.text-xl');
+                    // Update selector untuk card baru - price ada di floating card
+                    const priceElement = menuItem.querySelector('.font-black.text-indigo-600') || 
+                                       menuItem.querySelector('.font-bold.text-indigo-600');
                     if (priceElement) {
                         const priceText = priceElement.textContent;
-                        const price = parseInt(priceText.replace('Rp ', '').replace(/\./g, ''));
+                        const price = parseInt(priceText.replace('Rp ', '').replace(/\./g, '').replace(/,/g, ''));
                         const quantity = cart[menuId];
                         total += price * quantity;
+                        console.log('Calculate:', menuId, 'price:', price, 'qty:', quantity, 'subtotal:', price * quantity);
+                    } else {
+                        console.error('Price element not found for menuId:', menuId);
                     }
+                } else {
+                    console.error('Menu item not found for menuId:', menuId);
                 }
             }
         }
         
+        console.log('Total calculated:', total);
         return total;
     }
 
@@ -1695,12 +1692,14 @@ use Illuminate\Support\Facades\Storage;
                 
                 if (menuItem) {
                     const name = menuItem.querySelector('h3').textContent;
-                    const priceElement = menuItem.querySelector('.font-bold.text-indigo-600.text-xl');
+                    // Update selector untuk card baru
+                    const priceElement = menuItem.querySelector('.font-black.text-indigo-600') || 
+                                       menuItem.querySelector('.font-bold.text-indigo-600');
                     console.log('Name:', name, 'priceElement found:', !!priceElement);
                     
                     if (priceElement) {
                         const priceText = priceElement.textContent;
-                        const price = parseInt(priceText.replace('Rp ', '').replace(/\./g, ''));
+                        const price = parseInt(priceText.replace('Rp ', '').replace(/\./g, '').replace(/,/g, ''));
                         const subtotal = price * quantity;
                         total += subtotal;
                         console.log('Price:', price, 'Subtotal:', subtotal);
@@ -1734,6 +1733,8 @@ use Illuminate\Support\Facades\Storage;
                 btn.addEventListener('click', function() {
                     const menuId = this.dataset.menuId;
                     delete cart[menuId];
+                    // Reset tempQuantity juga
+                    tempQuantity[menuId] = 0;
                     updateCartSummary();
                     updateQuantityDisplay(menuId);
                     showCart();
@@ -1800,108 +1801,51 @@ use Illuminate\Support\Facades\Storage;
             </div>
         `;
         
-        // Payment Method Details
-        if (orderData.payment_method === 'qris') {
-            paymentHtml += `
-                <div class="payment-section">
-                    <div class="payment-option selected p-4 rounded-lg mb-4">
-                        <div class="flex items-center mb-3">
-                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                                <i class="fas fa-qrcode text-blue-600"></i>
+        // Payment Method - Cash Only
+        paymentHtml += `
+            <div class="payment-section">
+                <div class="bg-gradient-to-br from-indigo-50 to-purple-50 p-6 rounded-2xl border-2 border-indigo-200 mb-4">
+                    <div class="flex items-center mb-4">
+                        <div class="w-14 h-14 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center mr-4 shadow-lg">
+                            <i class="fas fa-money-bill-wave text-white text-2xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-gray-900 text-lg">Bayar Tunai di Kasir</h4>
+                            <p class="text-sm text-gray-600">Tunjukkan kode pesanan ke kasir</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-xl border border-indigo-100">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-cash-register text-5xl text-indigo-600 mb-3"></i>
+                            <h5 class="font-bold text-indigo-900 text-lg mb-2">Langkah Pembayaran</h5>
+                        </div>
+                        
+                        <div class="space-y-3 text-left">
+                            <div class="flex items-start">
+                                <div class="w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center text-xs font-bold mr-3 flex-shrink-0 mt-0.5">1</div>
+                                <p class="text-sm text-gray-700">Tunjukkan <strong>kode pesanan</strong> ke kasir</p>
                             </div>
-                            <div>
-                                <h4 class="font-semibold text-gray-800">QRIS</h4>
-                                <p class="text-sm text-gray-600">Scan kode QR untuk pembayaran</p>
+                            <div class="flex items-start">
+                                <div class="w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center text-xs font-bold mr-3 flex-shrink-0 mt-0.5">2</div>
+                                <p class="text-sm text-gray-700">Lakukan pembayaran tunai sebesar <strong>Rp ${orderData.total_amount.toLocaleString('id-ID')}</strong></p>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center text-xs font-bold mr-3 flex-shrink-0 mt-0.5">3</div>
+                                <p class="text-sm text-gray-700">Pesanan akan segera diproses setelah pembayaran</p>
                             </div>
                         </div>
                         
-                        <div class="payment-details">
-                            <div class="text-center bg-white p-4 rounded-lg border">
-                                <div class="w-48 h-48 bg-gray-100 mx-auto mb-4 flex items-center justify-center rounded-lg">
-                                    <div class="text-center">
-                                        <i class="fas fa-qrcode text-4xl text-gray-400 mb-2"></i>
-                                        <p class="text-xs text-gray-500">QR Code Pembayaran</p>
-                                    </div>
-                                </div>
-                                <p class="text-sm text-gray-600 mb-3">Scan QR code di atas dengan aplikasi e-wallet atau mobile banking Anda</p>
-                                <div class="bg-yellow-50 p-3 rounded-lg">
-                                    <p class="text-sm text-yellow-700 flex items-start">
-                                        <i class="fas fa-exclamation-circle mr-2 mt-0.5"></i>
-                                        Pastikan jumlah transfer sesuai dengan total pesanan
-                                    </p>
-                                </div>
-                            </div>
+                        <div class="bg-green-50 p-3 rounded-lg mt-4 border border-green-200">
+                            <p class="text-sm text-green-700 flex items-center">
+                                <i class="fas fa-check-circle mr-2"></i>
+                                Pesanan Anda sudah masuk ke sistem
+                            </p>
                         </div>
                     </div>
                 </div>
-            `;
-        } else if (orderData.payment_method === 'bank_transfer') {
-            paymentHtml += `
-                <div class="payment-section">
-                    <div class="payment-option selected p-4 rounded-lg mb-4">
-                        <div class="flex items-center mb-3">
-                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                                <i class="fas fa-university text-blue-600"></i>
-                            </div>
-                            <div>
-                                <h4 class="font-semibold text-gray-800">Transfer Bank</h4>
-                                <p class="text-sm text-gray-600">Transfer manual ke rekening bank</p>
-                            </div>
-                        </div>
-                        
-                        <div class="payment-details">
-                            <div class="space-y-3 bg-white p-4 rounded-lg border">
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">Bank Tujuan:</span>
-                                    <span class="font-medium">BCA</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">Nomor Rekening:</span>
-                                    <span class="font-medium">1234 5678 9012</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">Atas Nama:</span>
-                                    <span class="font-medium">Furawa Cafe</span>
-                                </div>
-                                <div class="bg-yellow-50 p-3 rounded-lg mt-3">
-                                    <p class="text-sm text-yellow-700 flex items-start">
-                                        <i class="fas fa-exclamation-circle mr-2 mt-0.5"></i>
-                                        Harap transfer tepat sampai 3 digit terakhir. Total: <span class="font-bold">Rp ${orderData.total_amount.toLocaleString('id-ID')}</span>
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        } else if (orderData.payment_method === 'cash') {
-            paymentHtml += `
-                <div class="payment-section">
-                    <div class="payment-option selected p-4 rounded-lg mb-4">
-                        <div class="flex items-center mb-3">
-                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                                <i class="fas fa-money-bill-wave text-blue-600"></i>
-                            </div>
-                            <div>
-                                <h4 class="font-semibold text-gray-800">Tunai</h4>
-                                <p class="text-sm text-gray-600">Bayar langsung di kasir</p>
-                            </div>
-                        </div>
-                        
-                        <div class="payment-details">
-                            <div class="text-center bg-white p-4 rounded-lg border">
-                                <i class="fas fa-cash-register text-4xl text-green-500 mb-3"></i>
-                                <h5 class="font-semibold text-green-800 mb-2">Bayar di Kasir</h5>
-                                <p class="text-gray-700 text-sm mb-3">Silakan tunjukkan pesanan ini ke kasir untuk melakukan pembayaran</p>
-                                <div class="bg-green-50 p-3 rounded-lg">
-                                    <p class="text-sm text-green-700">Pesanan Anda akan diproses setelah pembayaran di kasir</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
+            </div>
+        `;
         
         // Additional Information
         paymentHtml += `
@@ -1994,8 +1938,9 @@ use Illuminate\Support\Facades\Storage;
                 saveMyOrderCode(data.order.order_code);
                 
                 showSuccessModal(data.order);
-                // Reset cart
+                // Reset cart dan tempQuantity
                 cart = {};
+                tempQuantity = {};
                 updateCartSummary();
                 updateAllQuantityDisplays();
             } else {
@@ -2013,12 +1958,8 @@ use Illuminate\Support\Facades\Storage;
         const modal = document.getElementById('successModal');
         const message = document.getElementById('successMessage');
         
-        let messageText = '';
-        if (currentOrderData.payment_method === 'cash') {
-            messageText = `Pesanan Anda telah diterima. Silakan tunjukkan ke kasir untuk pembayaran.\nKode Pesanan: ${order.order_code}`;
-        } else {
-            messageText = `Pembayaran berhasil! Kode Pesanan: ${order.order_code}.\nPesanan Anda sedang diproses.`;
-        }
+        // Karena sekarang hanya cash, tampilkan pesan yang jelas
+        const messageText = `✅ Pesanan berhasil dibuat!\n\n📋 Kode Pesanan: ${order.order_code}\n\n💰 Silakan tunjukkan kode ini ke kasir untuk pembayaran.\n\nPesanan akan diproses setelah pembayaran dikonfirmasi.`;
         
         message.textContent = messageText;
         modal.classList.remove('hidden');
@@ -2431,31 +2372,32 @@ use Illuminate\Support\Facades\Storage;
 
     // Quantity controls
     document.addEventListener('click', function(e) {
-        // Quantity buttons
+        // Quantity buttons - hanya update temporary quantity
         if (e.target.closest('.quantity-btn')) {
             const btn = e.target.closest('.quantity-btn');
             const menuId = btn.dataset.menuId;
             const isIncrease = btn.classList.contains('increase');
             
-            if (!cart[menuId]) cart[menuId] = 0;
+            // Initialize tempQuantity jika belum ada
+            if (!tempQuantity[menuId]) tempQuantity[menuId] = 0;
             
             if (isIncrease) {
-                cart[menuId]++;
-            } else if (cart[menuId] > 0) {
-                cart[menuId]--;
+                tempQuantity[menuId]++;
+            } else if (tempQuantity[menuId] > 0) {
+                tempQuantity[menuId]--;
             }
             
+            // Update display saja, belum masuk cart
             updateQuantityDisplay(menuId);
-            updateCartSummary();
         }
         
-        // Add to cart buttons
+        // Add to cart buttons - masukkan tempQuantity ke cart
         if (e.target.closest('.add-to-cart')) {
             const btn = e.target.closest('.add-to-cart');
             const menuId = btn.dataset.menuId;
             
             console.log('Add to cart clicked, menuId:', menuId);
-            console.log('Current cart:', JSON.parse(JSON.stringify(cart)));
+            console.log('Current tempQuantity:', tempQuantity[menuId] || 0);
             
             // Check if item is disabled
             const menuItem = btn.closest('.menu-item');
@@ -2464,11 +2406,21 @@ use Illuminate\Support\Facades\Storage;
                 return;
             }
             
-            // Selalu tambahkan ke cart (tidak peduli sudah ada atau belum)
+            // Cek apakah ada quantity yang dipilih
+            const qty = tempQuantity[menuId] || 0;
+            if (qty === 0) {
+                showModernAlert('Pilih jumlah pesanan dulu ya! Klik tombol + untuk menambah 😊', 'warning');
+                return;
+            }
+            
+            // Masukkan ke cart
             if (!cart[menuId]) {
                 cart[menuId] = 0;
             }
-            cart[menuId] += 1;
+            cart[menuId] += qty;
+            
+            // Reset tempQuantity setelah masuk cart
+            tempQuantity[menuId] = 0;
             
             console.log('Cart after add:', JSON.parse(JSON.stringify(cart)));
             
