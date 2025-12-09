@@ -32,16 +32,109 @@ use Illuminate\Support\Facades\Storage;
     
     body {
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: #fafbfc;
     }
     
-    .menu-item {
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        border: 1px solid transparent;
+    /* ============== UTILITY CLASSES ============== */
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
     }
+    
+    /* ============== CONTAINER RESPONSIVE ============== */
+    .main-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+    
+    @media (min-width: 768px) {
+        .main-container {
+            padding: 0 2rem;
+        }
+    }
+    
+    @media (min-width: 1024px) {
+        .main-container {
+            padding: 0 3rem;
+        }
+    }
+    
+    /* ============== MENU ITEM CARDS - TOTAL REDESIGN ============== */
+    .menu-item {
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        background: white;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        overflow: hidden;
+        position: relative;
+        border: none;
+    }
+    
+    .menu-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
+        transform: scaleX(0);
+        transition: transform 0.4s ease;
+    }
+    
+    .menu-item:hover::before {
+        transform: scaleX(1);
+    }
+    
     .menu-item:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.1), 0 10px 10px -5px rgba(99, 102, 241, 0.04);
-        border-color: rgba(99, 102, 241, 0.2);
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 20px 40px -8px rgba(99, 102, 241, 0.25), 0 0 0 1px rgba(99, 102, 241, 0.1);
+    }
+    
+    /* Card dengan image di samping untuk desktop */
+    @media (min-width: 1024px) {
+        .menu-item-horizontal {
+            flex-direction: row;
+        }
+        
+        .menu-item-horizontal .menu-image-container {
+            width: 40%;
+            height: auto;
+            min-height: 100%;
+        }
+        
+        .menu-item-horizontal .menu-content {
+            width: 60%;
+            padding: 1.5rem;
+        }
+    }
+    
+    /* Desktop: 3 columns with better spacing */
+    @media (min-width: 1024px) {
+        .menu-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+    }
+    
+    /* Tablet: 2 columns */
+    @media (min-width: 768px) and (max-width: 1023px) {
+        .menu-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.25rem;
+        }
+    }
+    
+    /* Mobile: 1 column */
+    @media (max-width: 767px) {
+        .menu-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
     }
     
     /* Best Seller Animation - Modern */
@@ -127,13 +220,28 @@ use Illuminate\Support\Facades\Storage;
         background: #a8a8a8;
     }
     
-    /* Carousel Styles - Minimalist */
+    /* Carousel Styles - Responsive */
     .carousel-container {
         position: relative;
         overflow: hidden;
-        border-radius: 16px;
-        height: 160px;
-        box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.1);
+        border-radius: 20px;
+        height: 200px;
+        box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+    
+    @media (min-width: 768px) {
+        .carousel-container {
+            height: 280px;
+            border-radius: 24px;
+        }
+    }
+    
+    @media (min-width: 1024px) {
+        .carousel-container {
+            height: 360px;
+            border-radius: 28px;
+        }
     }
     
     .carousel-slide {
@@ -207,12 +315,12 @@ use Illuminate\Support\Facades\Storage;
         right: 10px;
     }
     
-    /* Horizontal Category Styles - Modern */
+    /* Horizontal Category Styles - Modern & Responsive */
     .category-scroll {
         display: flex;
         overflow-x: auto;
-        gap: 16px;
-        padding-bottom: 16px;
+        gap: 12px;
+        padding-bottom: 12px;
         scrollbar-width: none;
         -ms-overflow-style: none;
     }
@@ -223,9 +331,9 @@ use Illuminate\Support\Facades\Storage;
     
     .category-card {
         flex: 0 0 auto;
-        width: 110px;
-        height: 110px;
-        border-radius: 16px;
+        width: 100px;
+        height: 100px;
+        border-radius: 14px;
         overflow: hidden;
         position: relative;
         cursor: pointer;
@@ -267,6 +375,7 @@ use Illuminate\Support\Facades\Storage;
         text-shadow: 0 2px 4px rgba(0,0,0,0.3);
     }
 
+
     
     /* Mobile optimizations */
     @media (max-width: 768px) {
@@ -298,25 +407,56 @@ use Illuminate\Support\Facades\Storage;
         }
     }
 
-    /* Menu Image Container - Minimalist */
+    /* Menu Image Container - Dramatic Redesign */
     .menu-image-container {
         position: relative;
         width: 100%;
-        height: 160px;
-        background: linear-gradient(135deg, #f9fafb 0%, #e5e7eb 100%);
-        border-radius: 10px;
+        height: 200px;
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
         overflow: hidden;
+    }
+    
+    @media (min-width: 768px) {
+        .menu-image-container {
+            height: 220px;
+        }
+    }
+    
+    @media (min-width: 1024px) {
+        .menu-image-container {
+            height: 240px;
+        }
     }
     
     .menu-image {
         width: 100%;
         height: 100%;
         object-fit: cover;
-        transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        filter: brightness(0.95);
     }
     
     .menu-item:hover .menu-image {
-        transform: scale(1.1);
+        transform: scale(1.15) rotate(2deg);
+        filter: brightness(1.05);
+    }
+    
+    /* Gradient overlay pada image */
+    .menu-image-container::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 50%;
+        background: linear-gradient(to top, rgba(0,0,0,0.4), transparent);
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.4s ease;
+    }
+    
+    .menu-item:hover .menu-image-container::after {
+        opacity: 1;
     }
     
     .image-placeholder {
@@ -431,6 +571,177 @@ use Illuminate\Support\Facades\Storage;
         }
     }
     
+    /* ============== MODERN ALERT MODAL ============== */
+    .modern-alert-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(4px);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        animation: fadeIn 0.2s ease-out;
+    }
+    
+    .modern-alert-content {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem 1.75rem;
+        max-width: 340px;
+        width: 100%;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+    }
+    
+    .modern-alert-icon {
+        width: 56px;
+        height: 56px;
+        margin: 0 auto 1rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        flex-shrink: 0;
+    }
+    
+    .modern-alert-icon.warning {
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    }
+    
+    .modern-alert-icon.error {
+        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    }
+    
+    .modern-alert-icon.success {
+        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    }
+    
+    .modern-alert-icon.info {
+        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    }
+    
+    .modern-alert-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #1f2937;
+        text-align: center;
+        margin-bottom: 0.5rem;
+        line-height: 1.3;
+    }
+    
+    .modern-alert-message {
+        font-size: 0.875rem;
+        color: #6b7280;
+        text-align: center;
+        line-height: 1.5;
+        margin-bottom: 1.25rem;
+    }
+    
+    .modern-alert-button {
+        width: 100%;
+        padding: 0.75rem;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+    
+    .modern-alert-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+    }
+    
+    .modern-alert-button:active {
+        transform: translateY(0);
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px) scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+    
+    @keyframes fadeOut {
+        from {
+            opacity: 1;
+        }
+        to {
+            opacity: 0;
+        }
+    }
+    
+    @keyframes slideDown {
+        from {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+        to {
+            opacity: 0;
+            transform: translateY(20px) scale(0.95);
+        }
+    }
+    
+    .modern-alert-overlay.closing {
+        animation: fadeOut 0.2s ease-out forwards;
+    }
+    
+    .modern-alert-overlay.closing .modern-alert-content {
+        animation: slideDown 0.2s ease-out forwards;
+    }
+    
+    /* Responsive untuk mobile */
+    @media (max-width: 640px) {
+        .modern-alert-content {
+            max-width: 300px;
+            padding: 1.25rem 1.5rem;
+        }
+        
+        .modern-alert-icon {
+            width: 48px;
+            height: 48px;
+            font-size: 24px;
+            margin-bottom: 0.875rem;
+        }
+        
+        .modern-alert-title {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .modern-alert-message {
+            font-size: 0.8125rem;
+            margin-bottom: 1rem;
+        }
+        
+        .modern-alert-button {
+            padding: 0.625rem;
+            font-size: 0.8125rem;
+        }
+    }
+    
     /* Table Selection Buttons */
     .table-btn {
         cursor: pointer;
@@ -511,57 +822,33 @@ use Illuminate\Support\Facades\Storage;
             max-height: 50vh;
         }
     }
-
-    /* Quantity Display Styles */
-    .quantity-display {
-        min-width: 40px;
-        text-align: center;
-        font-weight: bold;
-        font-size: 16px;
-        color: #1f2937;
-    }
-    
-    .quantity-btn:disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
-    }
-    
-    /* Alert Animation */
-    @keyframes shake {
-        0%, 100% { transform: translateX(0); }
-        10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-        20%, 40%, 60%, 80% { transform: translateX(5px); }
-    }
-    
-    .shake {
-        animation: shake 0.5s ease-in-out;
-    }
 </style>
 </head>
-<body class="bg-gray-50 pb-20">
-    <!-- Header - Minimalist Design -->
+<body class="bg-gray-50 pb-20 md:pb-8">
+    <!-- Header - Responsive Design -->
     <div class="bg-white shadow-sm sticky top-0 z-30 backdrop-blur-sm bg-opacity-95 border-b border-gray-100">
-        <div class="container mx-auto px-4 py-3">
+        <div class="main-container py-3 md:py-4">
             <div class="flex justify-between items-center">
                 <div>
-                    <h1 class="text-lg font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">FURAWA CAFE</h1>
+                    <h1 class="text-lg md:text-xl lg:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">FURAWA CAFE</h1>
                 </div>
-                <div class="flex items-center space-x-2">
+                <div class="flex items-center space-x-3">
                     <div id="cartSummary" class="hidden">
-                        <span id="cartCount" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-semibold shadow-lg">0</span>
+                        <span id="cartCount" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full w-6 h-6 md:w-7 md:h-7 flex items-center justify-center text-xs md:text-sm font-semibold shadow-lg">0</span>
                     </div>
-                    <button id="cartButton" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all duration-300">
-                        <i class="fas fa-shopping-cart text-sm"></i>
+                    <button id="cartButton" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 md:px-5 py-2 md:py-2.5 rounded-lg md:rounded-xl hover:shadow-lg transition-all duration-300 text-sm md:text-base">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="hidden md:inline ml-2">Keranjang</span>
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="container mx-auto px-4 py-4">
-
-    <!-- Carousel Wrapper -->
-    <div class="relative w-full h-[260px] rounded-xl overflow-hidden shadow-md mb-5">
+    <div class="main-container py-4 md:py-6 lg:py-8">
+       
+    <!-- Carousel Wrapper - Responsive -->
+    <div class="carousel-container">
 
         <!-- Slide 1 -->
         <img 
@@ -601,26 +888,26 @@ use Illuminate\Support\Facades\Storage;
             </div>
         </div>
 
-        <!-- Search Bar - Minimalist Design -->
-        <div class="mb-5">
+        <!-- Search Bar - Responsive Design -->
+        <div class="mb-5 md:mb-6 lg:mb-8">
             <div class="relative">
                 <input type="text" id="searchInput" placeholder="Cari menu favorit Anda..." 
-                       class="w-full px-4 py-3 pl-11 pr-11 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all duration-300 shadow-sm">
-                <div class="absolute left-4 top-1/2 transform -translate-y-1/2">
-                    <i class="fas fa-search text-indigo-400 text-sm"></i>
+                       class="w-full px-4 md:px-5 py-3 md:py-3.5 pl-11 md:pl-12 pr-11 md:pr-12 bg-white border-2 border-gray-200 rounded-xl md:rounded-2xl focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all duration-300 shadow-sm text-sm md:text-base">
+                <div class="absolute left-4 md:left-5 top-1/2 transform -translate-y-1/2">
+                    <i class="fas fa-search text-indigo-400 text-sm md:text-base"></i>
                 </div>
-                <div class="absolute right-4 top-1/2 transform -translate-y-1/2">
+                <div class="absolute right-4 md:right-5 top-1/2 transform -translate-y-1/2">
                     <button id="clearSearch" class="text-gray-400 hover:text-indigo-600 transition-colors hidden">
-                        <i class="fas fa-times-circle text-sm"></i>
+                        <i class="fas fa-times-circle text-sm md:text-base"></i>
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- Horizontal Categories - Minimalist Design -->
-        <div class="mb-6">
-            <h2 class="text-lg font-bold text-gray-800 mb-3 flex items-center">
-                <span class="w-1 h-5 bg-gradient-to-b from-indigo-600 to-purple-600 rounded-full mr-2"></span>
+        <!-- Horizontal Categories - Responsive Design -->
+        <div class="mb-6 md:mb-8 lg:mb-10">
+            <h2 class="text-lg md:text-xl lg:text-2xl font-bold text-gray-800 mb-3 md:mb-4 flex items-center">
+                <span class="w-1 h-5 md:h-6 bg-gradient-to-b from-indigo-600 to-purple-600 rounded-full mr-2 md:mr-3"></span>
                 Kategori Menu
             </h2>
             <div class="category-scroll">
@@ -671,108 +958,18 @@ use Illuminate\Support\Facades\Storage;
                     <div class="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center text-xl shadow-md">
                         🍽️
                     </div>
-                    <h2 class="text-xl font-bold text-gray-800 ml-3">Makanan</h2>
+                    <h2 class="text-xl md:text-2xl font-bold text-gray-800 ml-3">Makanan</h2>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div class="menu-grid grid">
                     @foreach($categories['makanan'] as $menu)
                     @php
-                        // SIMPLIFIKASI LOGIKA GAMBAR
                         $imageUrl = $menu->image ? asset('storage/' . $menu->image) : null;
                         $fallbackImage = 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60';
                         $isOutOfStock = $menu->stock !== null && $menu->stock == 0;
+                        $category = 'makanan';
                     @endphp
                     
-                    <div class="menu-item bg-white rounded-xl shadow-md hover:shadow-xl p-4 relative {{ $isOutOfStock ? 'disabled' : '' }}" 
-                         data-category="makanan" 
-                         data-name="{{ strtolower($menu->name) }}"
-                         data-menu-id="{{ $menu->id }}">
-                        
-                        <!-- Best Seller Badge - Minimalist -->
-                        @if($menu->is_best_seller)
-                        <div class="absolute top-2 right-2 z-10">
-                            <div class="best-seller-badge text-white text-xs font-bold px-2.5 py-1 rounded-full flex items-center">
-                                <i class="fas fa-crown mr-1 text-xs"></i>
-                                Best
-                            </div>
-                        </div>
-                        @endif
-                        
-                        <div class="flex flex-col">
-                            <!-- Menu Image -->
-                            <div class="mb-3">
-                                <div class="menu-image-container">
-                                    @if($imageUrl)
-                                    <img src="{{ $imageUrl }}" 
-                                         alt="{{ $menu->name }}" 
-                                         class="menu-image"
-                                         onerror="this.onerror=null; this.src='{{ $fallbackImage }}';">
-                                    @else
-                                    <div class="image-placeholder">
-                                        <i class="fas fa-utensils text-3xl"></i>
-                                        <span>No Image</span>
-                                    </div>
-                                    @endif
-                                    
-                                    <!-- Stock Badge -->
-                                    @if($isOutOfStock)
-                                    <div class="absolute top-2 left-2 z-10">
-                                        <div class="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                                            Habis
-                                        </div>
-                                    </div>
-                                    @endif
-                                </div>
-                            </div>
-
-                            <!-- Menu Info - Modern -->
-                            <div class="flex justify-between items-start mb-4 flex-1">
-                                <div class="flex-1">
-                                    <h3 class="font-bold text-gray-900 text-lg mb-1">{{ $menu->name }}</h3>
-                                    <p class="text-sm text-gray-500 leading-relaxed">{{ $menu->description }}</p>
-                                    @if($menu->details)
-                                    <div class="mt-2">
-                                        <button class="text-indigo-600 text-xs font-medium hover:text-indigo-700 transition-colors view-details inline-flex items-center" 
-                                                data-details="{{ $menu->details }}">
-                                            <i class="fas fa-info-circle mr-1"></i>Detail lengkap
-                                        </button>
-                                    </div>
-                                    @endif
-                                </div>
-                                <div class="text-right ml-4">
-                                    <p class="font-bold text-indigo-600 text-xl">Rp {{ number_format($menu->price, 0, ',', '.') }}</p>
-                                    @if($menu->stock !== null)
-                                    <p class="text-xs {{ $menu->stock == 0 ? 'text-red-500 font-semibold' : 'text-gray-400' }} mt-1">
-                                        {{ $menu->stock == 0 ? 'Habis' : 'Stok: ' . $menu->stock }}
-                                    </p>
-                                    @else
-                                    <p class="text-xs text-green-500 font-medium mt-1">✓ Tersedia</p>
-                                    @endif
-                                </div>
-                            </div>
-                            
-                            <!-- Quantity Controls - Modern -->
-                            <div class="flex items-center justify-between mt-3">
-                                <div class="flex items-center space-x-3 bg-gray-50 rounded-xl px-3 py-2">
-                                    <button class="quantity-btn decrease bg-white w-9 h-9 rounded-lg flex items-center justify-center hover:bg-indigo-50 hover:text-indigo-600 transition-all shadow-sm" 
-                                            data-menu-id="{{ $menu->id }}"
-                                            {{ $isOutOfStock ? 'disabled' : '' }}>
-                                        <i class="fas fa-minus text-xs"></i>
-                                    </button>
-                                    <span class="quantity-display w-10 text-center font-bold text-gray-800" data-menu-id="{{ $menu->id }}">0</span>
-                                    <button class="quantity-btn increase bg-white w-9 h-9 rounded-lg flex items-center justify-center hover:bg-indigo-50 hover:text-indigo-600 transition-all shadow-sm" 
-                                            data-menu-id="{{ $menu->id }}"
-                                            {{ $isOutOfStock ? 'disabled' : '' }}>
-                                        <i class="fas fa-plus text-xs"></i>
-                                    </button>
-                                </div>
-                                <button class="add-to-cart bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-5 py-2.5 rounded-xl hover:shadow-lg text-sm font-medium transition-all duration-300 hover:scale-105" 
-                                        data-menu-id="{{ $menu->id }}"
-                                        {{ $isOutOfStock ? 'disabled' : '' }}>
-                                    <i class="fas fa-cart-plus mr-1"></i>Tambah
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                    @include('customer.partials.menu-card-new')
                     @endforeach
                 </div>
             </div>
@@ -785,17 +982,20 @@ use Illuminate\Support\Facades\Storage;
                     <div class="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-xl flex items-center justify-center text-xl shadow-md">
                         🥤
                     </div>
-                    <h2 class="text-xl font-bold text-gray-800 ml-3">Minuman</h2>
+                    <h2 class="text-xl md:text-2xl font-bold text-gray-800 ml-3">Minuman</h2>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div class="menu-grid grid">
                     @foreach($categories['minuman'] as $menu)
                     @php
                         $imageUrl = $menu->image ? asset('storage/' . $menu->image) : null;
                         $fallbackImage = 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60';
                         $isOutOfStock = $menu->stock !== null && $menu->stock == 0;
+                        $category = 'minuman';
                     @endphp
                     
-                    <div class="menu-item bg-white rounded-xl shadow-md hover:shadow-xl p-4 relative {{ $isOutOfStock ? 'disabled' : '' }}" 
+                    @include('customer.partials.menu-card-new')
+                    
+                    <div style="display:none;" class="menu-item bg-white rounded-xl shadow-md hover:shadow-xl p-4 relative {{ $isOutOfStock ? 'disabled' : '' }}" 
                          data-category="minuman" 
                          data-name="{{ strtolower($menu->name) }}"
                          data-menu-id="{{ $menu->id }}">
@@ -896,19 +1096,22 @@ use Illuminate\Support\Facades\Storage;
             <div class="mb-8 snack-section">
                 <div class="flex items-center mb-4">
                     <div class="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center text-xl shadow-md">
-                        🍰
+                        🍿
                     </div>
-                    <h2 class="text-xl font-bold text-gray-800 ml-3">Dessert</h2>
+                    <h2 class="text-xl md:text-2xl font-bold text-gray-800 ml-3">Snack</h2>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div class="menu-grid grid">
                     @foreach($categories['snack'] as $menu)
                     @php
                         $imageUrl = $menu->image ? asset('storage/' . $menu->image) : null;
                         $fallbackImage = 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60';
                         $isOutOfStock = $menu->stock !== null && $menu->stock == 0;
+                        $category = 'snack';
                     @endphp
                     
-                    <div class="menu-item bg-white rounded-xl shadow-md hover:shadow-xl p-4 relative {{ $isOutOfStock ? 'disabled' : '' }}" 
+                    @include('customer.partials.menu-card-new')
+                    
+                    <div style="display:none;" class="menu-item bg-white rounded-xl shadow-md hover:shadow-xl p-4 relative {{ $isOutOfStock ? 'disabled' : '' }}" 
                          data-category="snack" 
                          data-name="{{ strtolower($menu->name) }}"
                          data-menu-id="{{ $menu->id }}">
@@ -1086,11 +1289,27 @@ use Illuminate\Support\Facades\Storage;
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Metode Pembayaran *</label>
                             <div class="space-y-2">
                                 <label class="flex items-center p-3 bg-white hover:bg-indigo-50 border-2 border-gray-200 hover:border-indigo-500 rounded-lg cursor-pointer transition-all">
+                                    <input type="radio" name="payment_method" value="qris" checked 
+                                           class="text-indigo-600 focus:ring-indigo-500 w-4 h-4">
+                                    <div class="ml-2.5">
+                                        <span class="font-medium text-gray-800 text-sm">QRIS</span>
+                                        <p class="text-xs text-gray-500">Scan & bayar dengan QRIS</p>
+                                    </div>
+                                </label>
+                                <label class="flex items-center p-3 bg-white hover:bg-indigo-50 border-2 border-gray-200 hover:border-indigo-500 rounded-lg cursor-pointer transition-all">
+                                    <input type="radio" name="payment_method" value="bank_transfer"
+                                           class="text-indigo-600 focus:ring-indigo-500 w-4 h-4">
+                                    <div class="ml-2.5">
+                                        <span class="font-medium text-gray-800 text-sm">Transfer Bank</span>
+                                        <p class="text-xs text-gray-500">Transfer ke rekening kami</p>
+                                    </div>
+                                </label>
+                                <label class="flex items-center p-3 bg-white hover:bg-indigo-50 border-2 border-gray-200 hover:border-indigo-500 rounded-lg cursor-pointer transition-all">
                                     <input type="radio" name="payment_method" value="cash"
                                            class="text-indigo-600 focus:ring-indigo-500 w-4 h-4">
                                     <div class="ml-2.5">
-                                        <span class="font-medium text-gray-800 text-sm">Bayar Di Kasir</span>
-                                    
+                                        <span class="font-medium text-gray-800 text-sm">Tunai</span>
+                                        <p class="text-xs text-gray-500">Bayar di kasir</p>
                                     </div>
                                 </label>
                             </div>
@@ -1224,27 +1443,27 @@ use Illuminate\Support\Facades\Storage;
         </div>
     </div>
 
-    <!-- Footer Navigation - Minimalist Design -->
-    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 z-40 shadow-lg backdrop-blur-lg bg-opacity-95">
+    <!-- Footer Navigation - Responsive Design -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 z-40 shadow-lg backdrop-blur-lg bg-opacity-95 md:hidden">
         <div class="container mx-auto">
-            <div class="flex justify-around items-center py-2">
-                <a href="/menu" class="flex flex-col items-center text-indigo-600 transition-all duration-300 py-1">
+            <div class="flex justify-around items-center py-2.5">
+                <a href="/menu" class="flex flex-col items-center text-indigo-600 transition-all duration-300 py-1 px-3">
                     <i class="fas fa-utensils text-lg mb-1"></i>
                     <span class="text-xs font-medium">Menu</span>
                 </a>
                 
-                <button id="footerCartButton" class="flex flex-col items-center text-gray-600 hover:text-indigo-600 transition-all duration-300 py-1 relative">
+                <button id="footerCartButton" class="flex flex-col items-center text-gray-600 hover:text-indigo-600 transition-all duration-300 py-1 px-3 relative">
                     <i class="fas fa-shopping-cart text-lg mb-1"></i>
-                    <span id="footerCartCount" class="absolute top-0 right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold hidden shadow-lg">0</span>
+                    <span id="footerCartCount" class="absolute -top-1 right-1 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold hidden shadow-lg">0</span>
                     <span class="text-xs font-medium">Keranjang</span>
                 </button>
                 
-                <button id="footerOrderButton" class="flex flex-col items-center text-gray-600 hover:text-indigo-600 transition-all duration-300 py-1">
+                <button id="footerOrderButton" class="flex flex-col items-center text-gray-600 hover:text-indigo-600 transition-all duration-300 py-1 px-3">
                     <i class="fas fa-receipt text-lg mb-1"></i>
                     <span class="text-xs font-medium">Pesanan</span>
                 </button>
                 
-                <a href="/" class="flex flex-col items-center text-gray-600 hover:text-indigo-600 transition-all duration-300 py-1">
+                <a href="/" class="flex flex-col items-center text-gray-600 hover:text-indigo-600 transition-all duration-300 py-1 px-3">
                     <i class="fas fa-home text-lg mb-1"></i>
                     <span class="text-xs font-medium">Home</span>
                 </a>
@@ -1261,6 +1480,62 @@ use Illuminate\Support\Facades\Storage;
     const dots = document.querySelectorAll('.carousel-dot');
     const totalSlides = slides.length;
     let carouselInterval = null;
+    
+    // ==================== MODERN ALERT FUNCTION ====================
+    function showModernAlert(message, type = 'warning') {
+        // Icon mapping dengan emoji yang lebih friendly
+        const icons = {
+            warning: '⚠️',
+            error: '😔',
+            success: '✨',
+            info: 'ℹ️'
+        };
+        
+        // Title mapping yang lebih casual
+        const titles = {
+            warning: 'Ups!',
+            error: 'Waduh!',
+            success: 'Yeay!',
+            info: 'Info'
+        };
+        
+        // Create overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'modern-alert-overlay';
+        overlay.innerHTML = `
+            <div class="modern-alert-content">
+                <div class="modern-alert-icon ${type}">
+                    ${icons[type]}
+                </div>
+                <h3 class="modern-alert-title">${titles[type]}</h3>
+                <p class="modern-alert-message">${message}</p>
+                <button class="modern-alert-button">
+                    Oke, Mengerti
+                </button>
+            </div>
+        `;
+        
+        document.body.appendChild(overlay);
+        
+        // Close on button click
+        const button = overlay.querySelector('.modern-alert-button');
+        button.addEventListener('click', () => {
+            overlay.classList.add('closing');
+            setTimeout(() => {
+                document.body.removeChild(overlay);
+            }, 200);
+        });
+        
+        // Close on overlay click
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                overlay.classList.add('closing');
+                setTimeout(() => {
+                    document.body.removeChild(overlay);
+                }, 200);
+            }
+        });
+    }
     
     // ==================== LOCAL STORAGE FUNCTIONS ====================
     // Simpan order code ke localStorage
@@ -1285,6 +1560,11 @@ use Illuminate\Support\Facades\Storage;
 
     // ==================== HELPER FUNCTIONS ====================
     
+    // Function seperti PHP in_array - FIXED VERSION
+    function in_array(needle, haystack) {
+        return haystack.includes(needle);
+    }
+    
     // Function untuk select table
     function selectTable(tableNumber) {
         // Remove active class from all buttons
@@ -1303,6 +1583,8 @@ use Illuminate\Support\Facades\Storage;
         // Set hidden input value
         document.getElementById('tableIdInput').value = tableNumber;
     }
+
+
 
     // ==================== CAROUSEL FUNCTIONALITY ====================
     function showSlide(n) {
@@ -1344,17 +1626,14 @@ use Illuminate\Support\Facades\Storage;
     function updateQuantityDisplay(menuId) {
         const display = document.querySelector(`.quantity-display[data-menu-id="${menuId}"]`);
         if (display) {
-            // Update display only, not cart
-            const currentValue = parseInt(display.textContent) || 0;
-            display.textContent = currentValue;
+            display.textContent = cart[menuId] || 0;
         }
     }
 
     function updateAllQuantityDisplays() {
         document.querySelectorAll('.quantity-display').forEach(display => {
             const menuId = display.dataset.menuId;
-            // Reset all displays to 0
-            display.textContent = '0';
+            display.textContent = cart[menuId] || 0;
         });
     }
 
@@ -1412,16 +1691,19 @@ use Illuminate\Support\Facades\Storage;
             if (quantity > 0) {
                 hasItems = true;
                 const menuItem = document.querySelector(`.menu-item[data-menu-id="${menuId}"]`);
+                console.log('Processing menuId:', menuId, 'quantity:', quantity, 'menuItem found:', !!menuItem);
                 
                 if (menuItem) {
                     const name = menuItem.querySelector('h3').textContent;
                     const priceElement = menuItem.querySelector('.font-bold.text-indigo-600.text-xl');
+                    console.log('Name:', name, 'priceElement found:', !!priceElement);
                     
                     if (priceElement) {
                         const priceText = priceElement.textContent;
                         const price = parseInt(priceText.replace('Rp ', '').replace(/\./g, ''));
                         const subtotal = price * quantity;
                         total += subtotal;
+                        console.log('Price:', price, 'Subtotal:', subtotal);
                         
                         const cartItem = document.createElement('div');
                         cartItem.className = 'flex justify-between items-center p-3 bg-gray-50 rounded-lg';
@@ -1453,6 +1735,7 @@ use Illuminate\Support\Facades\Storage;
                     const menuId = this.dataset.menuId;
                     delete cart[menuId];
                     updateCartSummary();
+                    updateQuantityDisplay(menuId);
                     showCart();
                 });
             });
@@ -1460,9 +1743,6 @@ use Illuminate\Support\Facades\Storage;
             emptyCart.classList.remove('hidden');
             cartTotal.textContent = 'Rp 0';
         }
-        
-        // Reset all quantity displays to 0 when cart is opened
-        updateAllQuantityDisplays();
         
         modal.classList.remove('hidden');
     }
@@ -1719,13 +1999,13 @@ use Illuminate\Support\Facades\Storage;
                 updateCartSummary();
                 updateAllQuantityDisplays();
             } else {
-                alert('Gagal membuat pesanan: ' + (data.message || 'Unknown error'));
+                showModernAlert('Waduh, pesanannya gagal nih. ' + (data.message || 'Coba lagi ya!'), 'error');
             }
         })
         .catch(error => {
             hideLoading();
             console.error('Error:', error);
-            alert('Terjadi kesalahan: ' + error.message);
+            showModernAlert('Koneksi bermasalah nih. Cek internet kamu ya! 📶', 'error');
         });
     }
 
@@ -1972,16 +2252,16 @@ use Illuminate\Support\Facades\Storage;
             .then(data => {
                 hideLoading();
                 if (data.success) {
-                    alert('Pesanan berhasil dibatalkan');
+                    showModernAlert('Pesanan berhasil dibatalkan! 👍', 'success');
                     showOrderStatus();
                 } else {
-                    alert('Gagal membatalkan pesanan: ' + data.message);
+                    showModernAlert('Gagal batalkan pesanan: ' + data.message, 'error');
                 }
             })
             .catch(error => {
                 hideLoading();
                 console.error('Error:', error);
-                alert('Terjadi kesalahan saat membatalkan pesanan');
+                showModernAlert('Ada masalah saat batalkan pesanan. Coba lagi ya! 🙏', 'error');
             });
         }
     }
@@ -2149,103 +2429,59 @@ use Illuminate\Support\Facades\Storage;
         });
     }
 
-    // Main event listener for all interactions
+    // Quantity controls
     document.addEventListener('click', function(e) {
-        // Quantity buttons - hanya mengubah display
+        // Quantity buttons
         if (e.target.closest('.quantity-btn')) {
             const btn = e.target.closest('.quantity-btn');
             const menuId = btn.dataset.menuId;
             const isIncrease = btn.classList.contains('increase');
             
-            // Get current display value
-            const display = document.querySelector(`.quantity-display[data-menu-id="${menuId}"]`);
-            if (!display) return;
-            
-            let currentValue = parseInt(display.textContent) || 0;
+            if (!cart[menuId]) cart[menuId] = 0;
             
             if (isIncrease) {
-                // Check stock limit if available
-                const menuItem = btn.closest('.menu-item');
-                if (menuItem) {
-                    const stockText = menuItem.querySelector('.text-xs.text-gray-400')?.textContent;
-                    if (stockText && stockText.includes('Stok:')) {
-                        const stock = parseInt(stockText.replace('Stok:', '').trim());
-                        if (stock && currentValue >= stock) {
-                            alert(`Stok maksimum: ${stock}`);
-                            return;
-                        }
-                    }
-                }
-                currentValue++;
-            } else {
-                if (currentValue > 0) {
-                    currentValue--;
-                }
+                cart[menuId]++;
+            } else if (cart[menuId] > 0) {
+                cart[menuId]--;
             }
             
-            // Update display only (not cart)
-            display.textContent = currentValue;
-            
-            // Update button state
-            const decreaseBtn = menuItem?.querySelector(`.decrease[data-menu-id="${menuId}"]`);
-            if (decreaseBtn) {
-                decreaseBtn.disabled = currentValue === 0;
-                decreaseBtn.classList.toggle('opacity-50', currentValue === 0);
-            }
+            updateQuantityDisplay(menuId);
+            updateCartSummary();
         }
         
-        // Add to cart buttons - menambahkan jumlah yang ada di display ke cart
+        // Add to cart buttons
         if (e.target.closest('.add-to-cart')) {
             const btn = e.target.closest('.add-to-cart');
             const menuId = btn.dataset.menuId;
             
-            // Check if item is disabled (out of stock)
+            console.log('Add to cart clicked, menuId:', menuId);
+            console.log('Current cart:', JSON.parse(JSON.stringify(cart)));
+            
+            // Check if item is disabled
             const menuItem = btn.closest('.menu-item');
             if (menuItem && menuItem.classList.contains('disabled')) {
-                alert('Menu ini sedang habis stok');
+                showModernAlert('Menu ini lagi habis nih. Coba pilih menu lain ya! 😊', 'warning');
                 return;
             }
             
-            // Get the current quantity from display
-            const quantityDisplay = document.querySelector(`.quantity-display[data-menu-id="${menuId}"]`);
-            if (!quantityDisplay) {
-                console.error('Quantity display not found for menu:', menuId);
-                return;
-            }
-            
-            const quantityToAdd = parseInt(quantityDisplay.textContent);
-            
-            // If quantity is 0 or less, don't add to cart
-            if (quantityToAdd <= 0) {
-                // Add shake animation to alert user
-                quantityDisplay.classList.add('shake');
-                setTimeout(() => {
-                    quantityDisplay.classList.remove('shake');
-                }, 500);
-                alert('Silakan tambahkan kuantitas terlebih dahulu dengan tombol +');
-                return;
-            }
-            
-            // Add the quantity to cart
+            // Selalu tambahkan ke cart (tidak peduli sudah ada atau belum)
             if (!cart[menuId]) {
                 cart[menuId] = 0;
             }
-            cart[menuId] += quantityToAdd;
+            cart[menuId] += 1;
             
-            console.log(`Added ${quantityToAdd} to cart for menu ${menuId}. Cart now:`, cart[menuId]);
+            console.log('Cart after add:', JSON.parse(JSON.stringify(cart)));
             
-            // Reset quantity display to 0
-            quantityDisplay.textContent = '0';
-            
-            // Update cart summary
+            updateQuantityDisplay(menuId);
             updateCartSummary();
             
-            // Visual feedback
             const originalText = btn.innerHTML;
             const originalClasses = btn.className;
             
-            btn.innerHTML = `<i class="fas fa-check mr-1"></i>${quantityToAdd} ditambahkan`;
-            btn.classList.remove('from-indigo-600', 'to-purple-600');
+            btn.innerHTML = '<i class="fas fa-check mr-1"></i>Ditambahkan';
+            
+            // Remove all color classes and add green
+            btn.classList.remove('from-indigo-600', 'to-purple-600', 'bg-blue-600', 'hover:bg-blue-700');
             btn.classList.add('bg-green-600', 'hover:bg-green-700');
             
             setTimeout(() => {
@@ -2260,15 +2496,6 @@ use Illuminate\Support\Facades\Storage;
             const details = btn.dataset.details;
             document.getElementById('detailsContent').textContent = details;
             document.getElementById('detailsModal').classList.remove('hidden');
-        }
-        
-        // Remove item from cart
-        if (e.target.closest('.remove-item')) {
-            const btn = e.target.closest('.remove-item');
-            const menuId = btn.dataset.menuId;
-            delete cart[menuId];
-            updateCartSummary();
-            showCart();
         }
     });
 
@@ -2297,17 +2524,17 @@ use Illuminate\Support\Facades\Storage;
         
         // Validasi
         if (!tableId) {
-            alert('Silakan pilih nomor meja terlebih dahulu');
+            showModernAlert('Pilih nomor meja dulu ya! Biar kita tau mau kirim ke mana 😊', 'warning');
             return;
         }
         
         if (!customerName) {
-            alert('Silakan isi nama pemesan');
+            showModernAlert('Namanya siapa nih? Isi dulu dong biar kita bisa panggil 😄', 'warning');
             return;
         }
         
         if (Object.keys(cart).length === 0) {
-            alert('Keranjang masih kosong. Silakan tambahkan menu terlebih dahulu.');
+            showModernAlert('Keranjangnya masih kosong. Yuk pilih menu favoritmu dulu! 🍽️', 'warning');
             return;
         }
         
@@ -2324,7 +2551,7 @@ use Illuminate\Support\Facades\Storage;
         }
         
         if (hasOutOfStock) {
-            alert('Ada item dalam keranjang yang stoknya habis. Silakan hapus item tersebut.');
+            showModernAlert('Ada menu yang stoknya habis nih. Hapus dulu ya dari keranjang 🙏', 'warning');
             return;
         }
         
@@ -2343,7 +2570,7 @@ use Illuminate\Support\Facades\Storage;
     // Confirm payment
     document.getElementById('confirmPayment').addEventListener('click', function() {
         if (!currentOrderData) {
-            alert('Tidak ada data pesanan yang ditemukan.');
+            showModernAlert('Data pesanan tidak ditemukan. Coba pesan lagi ya! 🙏', 'warning');
             return;
         }
         
