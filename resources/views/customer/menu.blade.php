@@ -50,6 +50,13 @@ use Illuminate\Support\Facades\Storage;
         padding: 0 1rem;
     }
     
+    /* Mobile: Better spacing */
+    @media (max-width: 767px) {
+        .main-container {
+            padding: 0 1.25rem;
+        }
+    }
+    
     @media (min-width: 768px) {
         .main-container {
             padding: 0 2rem;
@@ -113,11 +120,23 @@ use Illuminate\Support\Facades\Storage;
         }
     }
     
-    /* Desktop: 3 columns with better spacing */
-    @media (min-width: 1024px) {
+    /* Base grid layout */
+    .menu-grid {
+        display: grid;
+        width: 100%;
+    }
+    
+    /* Mobile: 1 column with proper spacing */
+    @media (max-width: 767px) {
         .menu-grid {
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1.5rem;
+            grid-template-columns: 1fr;
+            gap: 1.25rem;
+            padding: 0 0.75rem;
+        }
+        
+        /* Extra spacing for main container on mobile */
+        .main-container {
+            padding: 0 1.25rem;
         }
     }
     
@@ -125,15 +144,17 @@ use Illuminate\Support\Facades\Storage;
     @media (min-width: 768px) and (max-width: 1023px) {
         .menu-grid {
             grid-template-columns: repeat(2, 1fr);
-            gap: 1.25rem;
+            gap: 1.5rem;
+            padding: 0 0.5rem;
         }
     }
     
-    /* Mobile: 1 column */
-    @media (max-width: 767px) {
+    /* Desktop: 3 columns with better spacing */
+    @media (min-width: 1024px) {
         .menu-grid {
-            grid-template-columns: 1fr;
-            gap: 1rem;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            padding: 0 0.5rem;
         }
     }
     
@@ -395,6 +416,8 @@ use Illuminate\Support\Facades\Storage;
         .carousel-container {
             height: 160px;
             border-radius: 16px;
+            margin-left: 0.5rem;
+            margin-right: 0.5rem;
         }
         
         .category-card {
@@ -404,6 +427,20 @@ use Illuminate\Support\Facades\Storage;
         
         .menu-image-container {
             height: 150px;
+        }
+        
+        /* Ensure menu items have proper spacing on mobile */
+        .menu-item {
+            margin-left: 0.25rem;
+            margin-right: 0.25rem;
+        }
+        
+        /* Better section header spacing on mobile */
+        .makanan-section h2,
+        .minuman-section h2,
+        .snack-section h2 {
+            margin-left: 0.5rem;
+            margin-right: 0.5rem;
         }
     }
 
@@ -825,9 +862,9 @@ use Illuminate\Support\Facades\Storage;
 </style>
 </head>
 <body class="bg-gray-50 pb-20 md:pb-8">
-    <!-- Header - Responsive Design -->
+    <!-- Header - Responsive Design with Better Height -->
     <div class="bg-white shadow-sm sticky top-0 z-30 backdrop-blur-sm bg-opacity-95 border-b border-gray-100">
-        <div class="main-container py-3 md:py-4">
+        <div class="main-container py-4 md:py-5 lg:py-6">
             <div class="flex justify-between items-center">
                 <div>
                     <h1 class="text-lg md:text-xl lg:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">FURAWA CAFE</h1>
@@ -836,7 +873,7 @@ use Illuminate\Support\Facades\Storage;
                     <div id="cartSummary" class="hidden">
                         <span id="cartCount" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full w-6 h-6 md:w-7 md:h-7 flex items-center justify-center text-xs md:text-sm font-semibold shadow-lg">0</span>
                     </div>
-                    <button id="cartButton" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 md:px-5 py-2 md:py-2.5 rounded-lg md:rounded-xl hover:shadow-lg transition-all duration-300 text-sm md:text-base">
+                    <button id="cartButton" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 md:px-5 py-2.5 md:py-3 rounded-lg md:rounded-xl hover:shadow-lg transition-all duration-300 text-sm md:text-base">
                         <i class="fas fa-shopping-cart"></i>
                         <span class="hidden md:inline ml-2">Keranjang</span>
                     </button>
@@ -889,7 +926,7 @@ use Illuminate\Support\Facades\Storage;
         </div>
 
         <!-- Search Bar - Responsive Design -->
-        <div class="mb-5 md:mb-6 lg:mb-8">
+        <div class="mb-4 md:mb-6 lg:mb-8">
             <div class="relative">
                 <input type="text" id="searchInput" placeholder="Cari menu favorit Anda..." 
                        class="w-full px-4 md:px-5 py-3 md:py-3.5 pl-11 md:pl-12 pr-11 md:pr-12 bg-white border-2 border-gray-200 rounded-xl md:rounded-2xl focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all duration-300 shadow-sm text-sm md:text-base">
@@ -905,7 +942,7 @@ use Illuminate\Support\Facades\Storage;
         </div>
 
         <!-- Horizontal Categories - Responsive Design -->
-        <div class="mb-6 md:mb-8 lg:mb-10">
+        <div class="mb-5 md:mb-8 lg:mb-10">
             <h2 class="text-lg md:text-xl lg:text-2xl font-bold text-gray-800 mb-3 md:mb-4 flex items-center">
                 <span class="w-1 h-5 md:h-6 bg-gradient-to-b from-indigo-600 to-purple-600 rounded-full mr-2 md:mr-3"></span>
                 Kategori Menu
@@ -953,7 +990,7 @@ use Illuminate\Support\Facades\Storage;
         <div id="menuContainer">
             <!-- Makanan Section - Minimalist Design -->
             @if(isset($categories['makanan']) && count($categories['makanan']) > 0)
-            <div class="mb-8 makanan-section">
+            <div class="mb-6 md:mb-8 makanan-section">
                 <div class="flex items-center mb-4">
                     <div class="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center text-xl shadow-md">
                         🍽️
@@ -963,6 +1000,7 @@ use Illuminate\Support\Facades\Storage;
                 <div class="menu-grid grid">
                     @foreach($categories['makanan'] as $menu)
                     @php
+                        // Generate admin image URL
                         $imageUrl = $menu->image ? asset('storage/' . $menu->image) : null;
                         $fallbackImage = 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60';
                         $isOutOfStock = $menu->stock !== null && $menu->stock == 0;
@@ -977,7 +1015,7 @@ use Illuminate\Support\Facades\Storage;
 
             <!-- Minuman Section - Minimalist Design -->
             @if(isset($categories['minuman']) && count($categories['minuman']) > 0)
-            <div class="mb-8 minuman-section">
+            <div class="mb-6 md:mb-8 minuman-section">
                 <div class="flex items-center mb-4">
                     <div class="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-xl flex items-center justify-center text-xl shadow-md">
                         🥤
@@ -987,6 +1025,7 @@ use Illuminate\Support\Facades\Storage;
                 <div class="menu-grid grid">
                     @foreach($categories['minuman'] as $menu)
                     @php
+                        // Generate admin image URL
                         $imageUrl = $menu->image ? asset('storage/' . $menu->image) : null;
                         $fallbackImage = 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60';
                         $isOutOfStock = $menu->stock !== null && $menu->stock == 0;
@@ -1093,7 +1132,7 @@ use Illuminate\Support\Facades\Storage;
 
             <!-- Snack Section - Minimalist Design -->
             @if(isset($categories['snack']) && count($categories['snack']) > 0)
-            <div class="mb-8 snack-section">
+            <div class="mb-6 md:mb-8 snack-section">
                 <div class="flex items-center mb-4">
                     <div class="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center text-xl shadow-md">
                         🍿
@@ -1103,6 +1142,7 @@ use Illuminate\Support\Facades\Storage;
                 <div class="menu-grid grid">
                     @foreach($categories['snack'] as $menu)
                     @php
+                        // Generate admin image URL
                         $imageUrl = $menu->image ? asset('storage/' . $menu->image) : null;
                         $fallbackImage = 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60';
                         $isOutOfStock = $menu->stock !== null && $menu->stock == 0;
@@ -1462,6 +1502,7 @@ use Illuminate\Support\Facades\Storage;
     let cart = {}; // Cart yang sebenarnya (setelah klik "Pesan")
     let tempQuantity = {}; // Temporary quantity (saat klik +/-)
     let currentOrderData = null;
+    let serviceChargePercentage = 3; // Default 3%, will be loaded from API
     let currentSlide = 0;
     const slides = document.querySelectorAll('.carousel-slide');
     const dots = document.querySelectorAll('.carousel-dot');
@@ -1644,32 +1685,35 @@ use Illuminate\Support\Facades\Storage;
     }
 
     function calculateTotal() {
-        let total = 0;
+        let subtotal = 0;
+        let totalPpn = 0;
+        let serviceCharge = 0;
         
         for (const menuId in cart) {
             if (cart[menuId] > 0) {
                 const menuItem = document.querySelector(`.menu-item[data-menu-id="${menuId}"]`);
                 if (menuItem) {
-                    // Update selector untuk card baru - price ada di floating card
-                    const priceElement = menuItem.querySelector('.font-black.text-indigo-600') || 
-                                       menuItem.querySelector('.font-bold.text-indigo-600');
-                    if (priceElement) {
-                        const priceText = priceElement.textContent;
-                        const price = parseInt(priceText.replace('Rp ', '').replace(/\./g, '').replace(/,/g, ''));
-                        const quantity = cart[menuId];
-                        total += price * quantity;
-                        console.log('Calculate:', menuId, 'price:', price, 'qty:', quantity, 'subtotal:', price * quantity);
-                    } else {
-                        console.error('Price element not found for menuId:', menuId);
-                    }
+                    const basePrice = parseFloat(menuItem.dataset.basePrice || 0);
+                    const ppnAmount = parseFloat(menuItem.dataset.ppnAmount || 0);
+                    const quantity = cart[menuId];
+                    
+                    subtotal += basePrice * quantity;
+                    totalPpn += ppnAmount * quantity;
                 } else {
                     console.error('Menu item not found for menuId:', menuId);
                 }
             }
         }
         
-        console.log('Total calculated:', total);
-        return total;
+        // Service charge berdasarkan setting admin
+        serviceCharge = subtotal * (serviceChargePercentage / 100);
+        
+        return {
+            subtotal: subtotal,
+            ppn: totalPpn,
+            serviceCharge: serviceCharge,
+            total: subtotal + totalPpn + serviceCharge
+        };
     }
 
     function showCart() {
@@ -1681,52 +1725,74 @@ use Illuminate\Support\Facades\Storage;
         cartItems.innerHTML = '';
         
         let hasItems = false;
-        let total = 0;
         
         for (const menuId in cart) {
             const quantity = cart[menuId];
             if (quantity > 0) {
                 hasItems = true;
                 const menuItem = document.querySelector(`.menu-item[data-menu-id="${menuId}"]`);
-                console.log('Processing menuId:', menuId, 'quantity:', quantity, 'menuItem found:', !!menuItem);
                 
                 if (menuItem) {
                     const name = menuItem.querySelector('h3').textContent;
-                    // Update selector untuk card baru
-                    const priceElement = menuItem.querySelector('.font-black.text-indigo-600') || 
-                                       menuItem.querySelector('.font-bold.text-indigo-600');
-                    console.log('Name:', name, 'priceElement found:', !!priceElement);
+                    const basePrice = parseFloat(menuItem.dataset.basePrice || 0);
+                    const ppnAmount = parseFloat(menuItem.dataset.ppnAmount || 0);
+                    const finalPrice = basePrice + ppnAmount;
+                    const itemSubtotal = finalPrice * quantity;
                     
-                    if (priceElement) {
-                        const priceText = priceElement.textContent;
-                        const price = parseInt(priceText.replace('Rp ', '').replace(/\./g, '').replace(/,/g, ''));
-                        const subtotal = price * quantity;
-                        total += subtotal;
-                        console.log('Price:', price, 'Subtotal:', subtotal);
-                        
-                        const cartItem = document.createElement('div');
-                        cartItem.className = 'flex justify-between items-center p-3 bg-gray-50 rounded-lg';
-                        cartItem.innerHTML = `
-                            <div class="flex-1">
-                                <h4 class="font-semibold text-gray-800">${name}</h4>
-                                <p class="text-sm text-gray-600">${priceText} × ${quantity}</p>
-                            </div>
-                            <div class="text-right">
-                                <p class="font-semibold text-gray-900">Rp ${subtotal.toLocaleString('id-ID')}</p>
-                                <button class="remove-item text-red-500 text-sm mt-1 hover:text-red-700 transition-colors" data-menu-id="${menuId}">
-                                    <i class="fas fa-trash mr-1"></i>Hapus
-                                </button>
-                            </div>
-                        `;
-                        cartItems.appendChild(cartItem);
+                    const cartItem = document.createElement('div');
+                    cartItem.className = 'flex justify-between items-center p-3 bg-gray-50 rounded-lg';
+                    
+                    let priceDisplay = `Rp ${basePrice.toLocaleString('id-ID')}`;
+                    if (ppnAmount > 0) {
+                        priceDisplay += ` + PPN Rp ${ppnAmount.toLocaleString('id-ID')}`;
                     }
+                    
+                    cartItem.innerHTML = `
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-gray-800">${name}</h4>
+                            <p class="text-sm text-gray-600">${priceDisplay} × ${quantity}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-semibold text-gray-900">Rp ${itemSubtotal.toLocaleString('id-ID')}</p>
+                            <button class="remove-item text-red-500 text-sm mt-1 hover:text-red-700 transition-colors" data-menu-id="${menuId}">
+                                <i class="fas fa-trash mr-1"></i>Hapus
+                            </button>
+                        </div>
+                    `;
+                    cartItems.appendChild(cartItem);
                 }
             }
         }
         
         if (hasItems) {
             emptyCart.classList.add('hidden');
-            cartTotal.textContent = `Rp ${total.toLocaleString('id-ID')}`;
+            
+            // Calculate totals
+            const totals = calculateTotal();
+            
+            // Update cart total display with breakdown
+            cartTotal.innerHTML = `
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span>Subtotal:</span>
+                        <span>Rp ${totals.subtotal.toLocaleString('id-ID')}</span>
+                    </div>
+                    ${totals.ppn > 0 ? `
+                    <div class="flex justify-between">
+                        <span>PPN:</span>
+                        <span>Rp ${totals.ppn.toLocaleString('id-ID')}</span>
+                    </div>
+                    ` : ''}
+                    <div class="flex justify-between">
+                        <span>Service Charge (${serviceChargePercentage}%):</span>
+                        <span>Rp ${totals.serviceCharge.toLocaleString('id-ID')}</span>
+                    </div>
+                    <div class="flex justify-between font-bold text-lg border-t pt-2">
+                        <span>Total:</span>
+                        <span class="text-indigo-600">Rp ${totals.total.toLocaleString('id-ID')}</span>
+                    </div>
+                </div>
+            `;
             
             // Add event listeners for remove buttons
             document.querySelectorAll('.remove-item').forEach(btn => {
@@ -1742,7 +1808,7 @@ use Illuminate\Support\Facades\Storage;
             });
         } else {
             emptyCart.classList.remove('hidden');
-            cartTotal.textContent = 'Rp 0';
+            cartTotal.innerHTML = '<div class="text-center text-gray-500">Rp 0</div>';
         }
         
         modal.classList.remove('hidden');
@@ -1780,7 +1846,7 @@ use Illuminate\Support\Facades\Storage;
             </div>
         `;
         
-        // Order Summary
+        // Order Summary with breakdown
         paymentHtml += `
             <div class="payment-section bg-gray-50 p-4 rounded-lg mb-4">
                 <h4 class="font-semibold text-gray-800 mb-3">Ringkasan Pesanan</h4>
@@ -1793,9 +1859,25 @@ use Illuminate\Support\Facades\Storage;
                         <span class="text-gray-600">Nama:</span>
                         <span class="font-medium">${orderData.customer_name}</span>
                     </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Total:</span>
-                        <span class="font-bold text-blue-600">Rp ${orderData.total_amount.toLocaleString('id-ID')}</span>
+                    <div class="border-t pt-2 mt-2">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Subtotal:</span>
+                            <span>Rp ${orderData.subtotal.toLocaleString('id-ID')}</span>
+                        </div>
+                        ${orderData.ppn > 0 ? `
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">PPN:</span>
+                            <span>Rp ${orderData.ppn.toLocaleString('id-ID')}</span>
+                        </div>
+                        ` : ''}
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Service Charge (${serviceChargePercentage}%):</span>
+                            <span>Rp ${orderData.serviceCharge.toLocaleString('id-ID')}</span>
+                        </div>
+                        <div class="flex justify-between font-bold text-base border-t pt-2 mt-2">
+                            <span class="text-gray-800">Total Pembayaran:</span>
+                            <span class="text-blue-600">Rp ${orderData.total_amount.toLocaleString('id-ID')}</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1887,13 +1969,16 @@ use Illuminate\Support\Facades\Storage;
 
     // ==================== ORDER PROCESSING ====================
     function processOrder(orderData) {
-        console.log('Processing order:', orderData);
+
         
         // Format data untuk server
         const formattedData = {
             customer_name: orderData.customer_name,
             table_id: parseInt(orderData.table_id),
             payment_method: orderData.payment_method,
+            subtotal: parseFloat(orderData.subtotal),
+            ppn_amount: parseFloat(orderData.ppn),
+            service_charge: parseFloat(orderData.serviceCharge),
             total_amount: parseFloat(orderData.total_amount),
             items: []
         };
@@ -1908,7 +1993,7 @@ use Illuminate\Support\Facades\Storage;
             }
         }
         
-        console.log('Sending to server:', formattedData);
+
         
         // Kirim ke server
         fetch('/orders', {
@@ -1929,7 +2014,7 @@ use Illuminate\Support\Facades\Storage;
             return response.json();
         })
         .then(data => {
-            console.log('Server response:', data);
+
             hideLoading();
             hidePayment();
             
@@ -1999,10 +2084,13 @@ use Illuminate\Support\Facades\Storage;
                 }
                 return response.json();
             })
-            .then(allOrders => {
+            .then(data => {
                 if (showLoadingOverlay) {
                     hideLoading();
                 }
+                
+                // Handle new response format
+                const allOrders = data.success ? data.orders : [];
                 
                 // Filter hanya pesanan milik device ini
                 const myOrderCodes = getMyOrderCodes();
@@ -2218,8 +2306,24 @@ use Illuminate\Support\Facades\Storage;
 
     // ==================== EVENT LISTENERS ====================
     
+    // Load service charge percentage from API
+    async function loadServiceChargePercentage() {
+        try {
+            const response = await fetch('/api/settings/service-charge');
+            const data = await response.json();
+            serviceChargePercentage = data.service_charge_percentage || 10;
+            console.log('Service charge loaded:', serviceChargePercentage + '%');
+        } catch (error) {
+            console.error('Failed to load service charge:', error);
+            serviceChargePercentage = 3; // Fallback to 3%
+        }
+    }
+
     // Carousel events
     document.addEventListener('DOMContentLoaded', function() {
+        // Load service charge first
+        loadServiceChargePercentage();
+        
         initCarousel();
         
         // Pause carousel on hover
@@ -2396,8 +2500,7 @@ use Illuminate\Support\Facades\Storage;
             const btn = e.target.closest('.add-to-cart');
             const menuId = btn.dataset.menuId;
             
-            console.log('Add to cart clicked, menuId:', menuId);
-            console.log('Current tempQuantity:', tempQuantity[menuId] || 0);
+
             
             // Check if item is disabled
             const menuItem = btn.closest('.menu-item');
@@ -2422,7 +2525,7 @@ use Illuminate\Support\Facades\Storage;
             // Reset tempQuantity setelah masuk cart
             tempQuantity[menuId] = 0;
             
-            console.log('Cart after add:', JSON.parse(JSON.stringify(cart)));
+
             
             updateQuantityDisplay(menuId);
             updateCartSummary();
@@ -2507,13 +2610,17 @@ use Illuminate\Support\Facades\Storage;
             return;
         }
         
-        // Prepare order data
+        // Prepare order data with breakdown
+        const totals = calculateTotal();
         currentOrderData = {
             table_id: parseInt(tableId),
             customer_name: customerName,
             payment_method: paymentMethod,
             items: {...cart}, // Copy cart object
-            total_amount: calculateTotal()
+            subtotal: totals.subtotal,
+            ppn: totals.ppn,
+            serviceCharge: totals.serviceCharge,
+            total_amount: totals.total
         };
         
         showPaymentModal(currentOrderData);

@@ -58,6 +58,9 @@ class Order extends Model
         'table_id',
         'status',
         'total_amount',
+        'subtotal',
+        'ppn_amount',
+        'service_charge',
         'payment_method',
         'payment_status',
         'notes'
@@ -65,6 +68,9 @@ class Order extends Model
 
     protected $casts = [
         'total_amount' => 'decimal:2',
+        'subtotal' => 'decimal:2',
+        'ppn_amount' => 'decimal:2',
+        'service_charge' => 'decimal:2',
         'created_at' => 'datetime',
         'updated_at' => 'datetime'
     ];

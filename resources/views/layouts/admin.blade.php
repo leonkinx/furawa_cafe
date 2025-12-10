@@ -111,6 +111,10 @@
                    class="block py-2.5 px-4 rounded transition-all duration-200 hover:bg-blue-700 hover:text-white {{ request()->routeIs('admin.users.*') ? 'bg-blue-700' : '' }}">
                     <i class="fas fa-users-cog mr-2"></i>Akun Admin
                 </a>
+                <a href="{{ route('admin.settings.index') }}" 
+                   class="block py-2.5 px-4 rounded transition-all duration-200 hover:bg-blue-700 hover:text-white {{ request()->routeIs('admin.settings.*') ? 'bg-blue-700' : '' }}">
+                    <i class="fas fa-cog mr-2"></i>Pengaturan
+                </a>
             </nav>
             
             <!-- User Info & Logout -->

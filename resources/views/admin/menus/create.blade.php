@@ -72,6 +72,22 @@
                     @enderror
                 </div>
 
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">PPN (Pajak Pertambahan Nilai)</label>
+                    <div class="relative">
+                        <input type="number" name="ppn_percentage" value="{{ old('ppn_percentage', 0) }}" min="0" max="100" step="0.01"
+                               class="w-full pr-10 pl-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                               placeholder="0">
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <span class="text-gray-500">%</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Masukkan 0 jika tidak ada PPN. Contoh: 11 untuk PPN 11%</p>
+                    @error('ppn_percentage')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- Stock Management - PERBAIKAN DI SINI -->
                 <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
                     <label class="flex items-center mb-3">

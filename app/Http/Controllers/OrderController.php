@@ -27,6 +27,9 @@ class OrderController extends Controller
                 'items' => 'required|array|min:1',
                 'items.*.menu_id' => 'required|exists:menus,id',
                 'items.*.quantity' => 'required|integer|min:1',
+                'subtotal' => 'required|numeric|min:0',
+                'ppn_amount' => 'required|numeric|min:0',
+                'service_charge' => 'required|numeric|min:0',
                 'total_amount' => 'required|numeric|min:1'
             ]);
             
@@ -89,6 +92,9 @@ class OrderController extends Controller
                 'customer_name' => $validated['customer_name'],
                 'table_id' => $tableId,
                 'payment_method' => $validated['payment_method'],
+                'subtotal' => $validated['subtotal'],
+                'ppn_amount' => $validated['ppn_amount'],
+                'service_charge' => $validated['service_charge'],
                 'total_amount' => $validated['total_amount'],
                 'status' => 'pending',
                 'payment_status' => $paymentStatus

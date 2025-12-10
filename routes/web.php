@@ -43,10 +43,27 @@ Route::get('/menu/prices', function (Request $request) {
     return response()->json($menus);
 });
 
+// ==================== IMAGE SERVING ROUTE ====================
+Route::get('/storage/menu-images/{filename}', function($filename) {
+    $path = storage_path('app/public/menu-images/' . $filename);
+    
+    if (!file_exists($path)) {
+        abort(404);
+    }
+    
+    $file = file_get_contents($path);
+    $type = mime_content_type($path);
+    
+    return response($file, 200)->header('Content-Type', $type);
+})->where('filename', '.*');
+
 // ==================== API ROUTES FOR CUSTOMER ====================
 Route::prefix('api')->group(function () {
     // Get all orders (for customer tracking)
     Route::get('/orders/my-orders', [OrderController::class, 'getOrderStatus']);
+    
+    // Get service charge percentage
+    Route::get('/settings/service-charge', [\App\Http\Controllers\SettingController::class, 'getServiceCharge']);
     
     // Cancel order
     Route::post('/orders/{order_code}/cancel', function($order_code) {
@@ -150,6 +167,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         
         // User Management Routes
         Route::resource('users', \App\Http\Controllers\UserController::class);
+        
+        // Settings Routes
+        Route::get('/settings', [\App\Http\Controllers\SettingController::class, 'index'])->name('settings.index');
+        Route::put('/settings', [\App\Http\Controllers\SettingController::class, 'update'])->name('settings.update');
         
         // ✅ TAMBAHKAN ROUTE INI: Fix database (opsional, hati-hati!)
         // Tambahkan ini di web.php di dalam group admin (setelah reports routes):

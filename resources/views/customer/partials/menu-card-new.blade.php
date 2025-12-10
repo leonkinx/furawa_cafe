@@ -2,21 +2,30 @@
 <div class="menu-item group bg-white rounded-2xl shadow-lg overflow-hidden relative {{ $isOutOfStock ? 'opacity-60 pointer-events-none' : '' }}" 
      data-category="{{ $category }}" 
      data-name="{{ strtolower($menu->name) }}"
-     data-menu-id="{{ $menu->id }}">
+     data-menu-id="{{ $menu->id }}"
+     data-base-price="{{ $menu->price }}"
+     data-ppn-percentage="{{ $menu->ppn_percentage ?? 0 }}"
+     data-ppn-amount="{{ $menu->ppn_amount ?? 0 }}"
+     data-final-price="{{ $menu->final_price }}">
     
     {{-- Image Section with Overlay --}}
     <div class="menu-image-container relative">
-        @if($imageUrl)
-        <img src="{{ $imageUrl }}" 
+        @php
+            // Generate admin image URL - prioritize admin uploads
+            $adminImageUrl = null;
+            if ($menu->image) {
+                // Always use storage URL for uploaded images
+                $adminImageUrl = asset('storage/' . $menu->image);
+            }
+        @endphp
+        
+        <img src="{{ $adminImageUrl ?: $fallbackImage }}" 
              alt="{{ $menu->name }}" 
              class="menu-image"
-             onerror="this.onerror=null; this.src='{{ $fallbackImage }}';">
-        @else
-        <div class="image-placeholder w-full h-full flex flex-col items-center justify-center">
-            <i class="fas fa-utensils text-4xl text-white opacity-50"></i>
-            <span class="text-white text-sm mt-2 opacity-50">No Image</span>
-        </div>
-        @endif
+             loading="lazy"
+             onerror="this.onerror=null; this.src='{{ $fallbackImage }}';"
+             data-admin-image="{{ $menu->image ?? 'none' }}"
+             data-admin-url="{{ $adminImageUrl ?? 'none' }}">
         
         {{-- Badges Overlay on Image --}}
         <div class="absolute top-3 left-3 right-3 flex justify-between items-start z-10">
@@ -40,9 +49,15 @@
         
         {{-- Price Tag on Image (Bottom Right) --}}
         <div class="absolute bottom-3 right-3 z-10">
-            <div class="bg-white backdrop-blur-md bg-opacity-95 rounded-xl px-4 py-2 shadow-xl">
-                <p class="text-xs text-gray-500 font-medium">Harga</p>
-                <p class="font-black text-indigo-600 text-lg leading-none">Rp {{ number_format($menu->price, 0, ',', '.') }}</p>
+            <div class="bg-white backdrop-blur-md bg-opacity-95 rounded-xl px-3 py-2 shadow-xl">
+                @if($menu->ppn_percentage > 0)
+                    <p class="text-xs text-gray-500 font-medium">Harga + PPN</p>
+                    <p class="font-black text-indigo-600 text-base leading-none">Rp {{ number_format($menu->final_price, 0, ',', '.') }}</p>
+                    <p class="text-xs text-gray-400 mt-1">Base: Rp {{ number_format($menu->price, 0, ',', '.') }}</p>
+                @else
+                    <p class="text-xs text-gray-500 font-medium">Harga</p>
+                    <p class="font-black text-indigo-600 text-lg leading-none">Rp {{ number_format($menu->price, 0, ',', '.') }}</p>
+                @endif
             </div>
         </div>
     </div>
@@ -56,8 +71,16 @@
                     {{ $menu->name }}
                 </h3>
             </div>
-            <div class="ml-3 flex-shrink-0">
-                <p class="font-black text-indigo-600 text-xl whitespace-nowrap">Rp {{ number_format($menu->price, 0, ',', '.') }}</p>
+            <div class="ml-3 flex-shrink-0 text-right">
+                @if($menu->ppn_percentage > 0)
+                    <p class="font-black text-indigo-600 text-lg whitespace-nowrap">Rp {{ number_format($menu->final_price, 0, ',', '.') }}</p>
+                    <div class="text-xs text-gray-500 mt-1">
+                        <div>Base: Rp {{ number_format($menu->price, 0, ',', '.') }}</div>
+                        <div>PPN {{ $menu->ppn_percentage }}%: Rp {{ number_format($menu->ppn_amount, 0, ',', '.') }}</div>
+                    </div>
+                @else
+                    <p class="font-black text-indigo-600 text-xl whitespace-nowrap">Rp {{ number_format($menu->price, 0, ',', '.') }}</p>
+                @endif
             </div>
         </div>
         
