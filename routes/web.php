@@ -28,10 +28,9 @@ Route::get('/', [CustomerController::class, 'index'])->name('customer.welcome');
 Route::get('/menu', [CustomerController::class, 'showMenu'])->name('customer.menu');
 Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
 
-// ✅ TAMBAHKAN ROUTE INI: Customer bisa lihat status pesanan
-Route::get('/orders/status', [OrderController::class, 'customerOrderStatus'])->name('orders.status');
-Route::post('/orders/check-status', [OrderController::class, 'checkOrderStatus'])->name('orders.check-status');
+// Customer order tracking routes
 Route::get('/orders/track/{order_code}', [OrderController::class, 'trackOrder'])->name('orders.track');
+Route::get('/orders/receipt/{order_code}', [OrderController::class, 'showReceipt'])->name('orders.receipt');
 
 // Route untuk get menu prices
 Route::get('/menu/prices', function (Request $request) {
@@ -59,37 +58,11 @@ Route::get('/storage/menu-images/{filename}', function($filename) {
 
 // ==================== API ROUTES FOR CUSTOMER ====================
 Route::prefix('api')->group(function () {
-    // Get all orders (for customer tracking)
-    Route::get('/orders/my-orders', [OrderController::class, 'getOrderStatus']);
-    
     // Get service charge percentage
     Route::get('/settings/service-charge', [\App\Http\Controllers\SettingController::class, 'getServiceCharge']);
     
     // Cancel order
-    Route::post('/orders/{order_code}/cancel', function($order_code) {
-        $order = App\Models\Order::where('order_code', $order_code)->first();
-        
-        if (!$order) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Pesanan tidak ditemukan'
-            ], 404);
-        }
-        
-        if ($order->status !== 'pending') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Pesanan tidak dapat dibatalkan'
-            ], 400);
-        }
-        
-        $order->update(['status' => 'cancelled']);
-        
-        return response()->json([
-            'success' => true,
-            'message' => 'Pesanan berhasil dibatalkan'
-        ]);
-    });
+    Route::post('/orders/{order_code}/cancel', [OrderController::class, 'cancelByCode']);
 });
 
 // ==================== TEST ROUTE FOR DEBUGGING ====================
@@ -119,6 +92,24 @@ Route::get('/test-dashboard-data', function() {
     return response()->json($data, JSON_PRETTY_PRINT);
 });
 
+// ==================== API ROUTES ====================
+Route::prefix('api')->group(function () {
+    Route::get('/settings/service-charge', function () {
+        try {
+            $setting = \App\Models\Setting::where('key', 'service_charge_percentage')->first();
+            $percentage = $setting ? $setting->value : 3;
+            
+            return response()->json([
+                'service_charge_percentage' => (float) $percentage
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'service_charge_percentage' => 3
+            ]);
+        }
+    });
+});
+
 // ==================== ADMIN ROUTES ====================
 Route::prefix('admin')->name('admin.')->group(function () {
     // Public routes - no auth needed (LOGIN)
@@ -135,6 +126,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/menus', [MenuController::class, 'index'])->name('menus.index');
         Route::get('/menus/create', [MenuController::class, 'create'])->name('menus.create');
         Route::post('/menus', [MenuController::class, 'store'])->name('menus.store');
+        Route::delete('/menus/bulk-delete', [MenuController::class, 'bulkDelete'])->name('menus.bulk-delete');
         Route::get('/menus/{menu}/edit', [MenuController::class, 'edit'])->name('menus.edit');
         Route::put('/menus/{menu}', [MenuController::class, 'update'])->name('menus.update');
         Route::delete('/menus/{menu}', [MenuController::class, 'destroy'])->name('menus.destroy');
@@ -164,6 +156,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
         Route::post('/reports/filter', [ReportController::class, 'filter'])->name('reports.filter');
         Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
+        Route::post('/reports/export', [ReportController::class, 'export'])->name('reports.export.post');
+        Route::get('/reports/export-excel', [ReportController::class, 'exportExcel'])->name('reports.export.excel');
+        Route::post('/reports/export-excel', [ReportController::class, 'exportExcel'])->name('reports.export.excel.post');
         
         // User Management Routes
         Route::resource('users', \App\Http\Controllers\UserController::class);

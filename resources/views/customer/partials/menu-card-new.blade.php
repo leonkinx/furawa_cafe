@@ -6,7 +6,9 @@
      data-base-price="{{ $menu->price }}"
      data-ppn-percentage="{{ $menu->ppn_percentage ?? 0 }}"
      data-ppn-amount="{{ $menu->ppn_amount ?? 0 }}"
-     data-final-price="{{ $menu->final_price }}">
+     data-final-price="{{ $menu->final_price }}"
+     data-has-temperature="{{ $menu->has_temperature_options ? 'true' : 'false' }}"
+     data-temperature-options="{{ $menu->temperature_options ? json_encode($menu->temperature_options) : '[]' }}">
     
     {{-- Image Section with Overlay --}}
     <div class="menu-image-container relative">
@@ -47,47 +49,55 @@
             @endif
         </div>
         
-        {{-- Price Tag on Image (Bottom Right) --}}
-        <div class="absolute bottom-3 right-3 z-10">
-            <div class="bg-white backdrop-blur-md bg-opacity-95 rounded-xl px-3 py-2 shadow-xl">
-                @if($menu->ppn_percentage > 0)
-                    <p class="text-xs text-gray-500 font-medium">Harga + PPN</p>
-                    <p class="font-black text-indigo-600 text-base leading-none">Rp {{ number_format($menu->final_price, 0, ',', '.') }}</p>
-                    <p class="text-xs text-gray-400 mt-1">Base: Rp {{ number_format($menu->price, 0, ',', '.') }}</p>
-                @else
-                    <p class="text-xs text-gray-500 font-medium">Harga</p>
-                    <p class="font-black text-indigo-600 text-lg leading-none">Rp {{ number_format($menu->price, 0, ',', '.') }}</p>
-                @endif
-            </div>
-        </div>
+
     </div>
 
     {{-- Content Section --}}
     <div class="p-4 md:p-5">
-        {{-- Title & Price --}}
-        <div class="flex justify-between items-start mb-3">
-            <div class="flex-1">
-                <h3 class="font-bold text-gray-900 text-lg md:text-xl mb-1 line-clamp-1 group-hover:text-indigo-600 transition-colors">
-                    {{ $menu->name }}
-                </h3>
-            </div>
-            <div class="ml-3 flex-shrink-0 text-right">
-                @if($menu->ppn_percentage > 0)
-                    <p class="font-black text-indigo-600 text-lg whitespace-nowrap">Rp {{ number_format($menu->final_price, 0, ',', '.') }}</p>
-                    <div class="text-xs text-gray-500 mt-1">
-                        <div>Base: Rp {{ number_format($menu->price, 0, ',', '.') }}</div>
-                        <div>PPN {{ $menu->ppn_percentage }}%: Rp {{ number_format($menu->ppn_amount, 0, ',', '.') }}</div>
-                    </div>
-                @else
-                    <p class="font-black text-indigo-600 text-xl whitespace-nowrap">Rp {{ number_format($menu->price, 0, ',', '.') }}</p>
-                @endif
-            </div>
+        {{-- Title --}}
+        <div class="mb-2">
+            <h3 class="font-semibold text-gray-900 text-sm md:text-base leading-tight group-hover:text-indigo-600 transition-colors">
+                {{ $menu->name }}
+            </h3>
+        </div>
+        
+        {{-- Price --}}
+        <div class="mb-3">
+            @if($menu->ppn_percentage > 0)
+                <p class="font-semibold text-indigo-600 text-sm">Rp {{ number_format($menu->final_price, 0, ',', '.') }}</p>
+                <div class="text-xs text-gray-500 mt-1">
+                    <div>Base: Rp {{ number_format($menu->price, 0, ',', '.') }}</div>
+                    <div>PPN {{ $menu->ppn_percentage }}%: Rp {{ number_format($menu->ppn_amount, 0, ',', '.') }}</div>
+                </div>
+            @else
+                <p class="font-semibold text-indigo-600 text-sm">Rp {{ number_format($menu->price, 0, ',', '.') }}</p>
+            @endif
         </div>
         
         {{-- Description --}}
         <p class="text-sm text-gray-500 leading-relaxed line-clamp-2 mb-3">
             {{ $menu->description }}
         </p>
+
+        {{-- Temperature Options for Drinks --}}
+        @if($menu->category === 'minuman' && $menu->has_temperature_options && $menu->temperature_options)
+        <div class="temperature-options mb-3" data-menu-id="{{ $menu->id }}">
+            <p class="text-xs font-medium text-gray-700 mb-2">Pilih Varian: <span class="text-red-500">*</span></p>
+            <div class="flex gap-2">
+                @foreach($menu->temperature_options as $temp)
+                <button class="temperature-btn px-3 py-1 text-xs rounded-full border-2 transition-all duration-200 border-gray-300 bg-white text-gray-600 hover:border-indigo-400"
+                        data-temperature="{{ $temp }}"
+                        data-menu-id="{{ $menu->id }}">
+                    @if($temp === 'ice')
+                        🧊 Ice
+                    @elseif($temp === 'hot')
+                        🔥 Hot
+                    @endif
+                </button>
+                @endforeach
+            </div>
+        </div>
+        @endif
         
         {{-- Meta Info --}}
         <div class="flex items-center gap-3 text-xs mb-4">
@@ -111,28 +121,28 @@
             @endif
         </div>
         
-        {{-- Action Section - Compact & Clean --}}
-        <div class="flex items-stretch gap-2">
-            {{-- Quantity Controls - Compact --}}
-            <div class="flex items-center bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                <button class="quantity-btn decrease bg-transparent w-10 h-10 flex items-center justify-center hover:bg-indigo-600 hover:text-white transition-all active:scale-95" 
+        {{-- Action Section - Ultra Compact --}}
+        <div class="flex items-stretch gap-1">
+            {{-- Quantity Controls - Ultra Compact --}}
+            <div class="flex items-center bg-gray-100 rounded-md overflow-hidden flex-shrink-0">
+                <button class="quantity-btn decrease bg-transparent w-6 h-6 flex items-center justify-center hover:bg-indigo-600 hover:text-white transition-all active:scale-95" 
                         data-menu-id="{{ $menu->id }}"
                         {{ $isOutOfStock ? 'disabled' : '' }}>
-                    <i class="fas fa-minus text-sm"></i>
+                    <i class="fas fa-minus" style="font-size: 10px;"></i>
                 </button>
-                <span class="quantity-display w-12 text-center font-bold text-gray-900 text-base bg-white" data-menu-id="{{ $menu->id }}">0</span>
-                <button class="quantity-btn increase bg-transparent w-10 h-10 flex items-center justify-center hover:bg-indigo-600 hover:text-white transition-all active:scale-95" 
+                <span class="quantity-display w-6 text-center font-semibold text-gray-900 text-xs bg-white" data-menu-id="{{ $menu->id }}">0</span>
+                <button class="quantity-btn increase bg-transparent w-6 h-6 flex items-center justify-center hover:bg-indigo-600 hover:text-white transition-all active:scale-95" 
                         data-menu-id="{{ $menu->id }}"
                         {{ $isOutOfStock ? 'disabled' : '' }}>
-                    <i class="fas fa-plus text-sm"></i>
+                    <i class="fas fa-plus" style="font-size: 10px;"></i>
                 </button>
             </div>
             
             {{-- Add to Cart Button - Full Width --}}
-            <button class="add-to-cart bg-gradient-to-r from-indigo-600 to-purple-600 text-white flex-1 h-10 rounded-lg hover:shadow-lg hover:scale-105 text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2 active:scale-95" 
+            <button class="add-to-cart bg-gradient-to-r from-indigo-600 to-purple-600 text-white flex-1 h-6 rounded-md hover:shadow-lg hover:scale-105 text-xs font-semibold transition-all duration-300 flex items-center justify-center gap-1 active:scale-95" 
                     data-menu-id="{{ $menu->id }}"
                     {{ $isOutOfStock ? 'disabled' : '' }}>
-                <i class="fas fa-shopping-cart text-base"></i>
+                <i class="fas fa-shopping-cart" style="font-size: 10px;"></i>
                 <span>Pesan</span>
             </button>
         </div>

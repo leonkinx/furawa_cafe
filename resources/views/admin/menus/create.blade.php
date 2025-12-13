@@ -46,7 +46,7 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Kategori *</label>
-                    <select name="category" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+                    <select name="category" id="categorySelect" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
                         <option value="">Pilih Kategori</option>
                         <option value="makanan" {{ old('category') == 'makanan' ? 'selected' : '' }}>Makanan</option>
                         <option value="minuman" {{ old('category') == 'minuman' ? 'selected' : '' }}>Minuman</option>
@@ -55,6 +55,35 @@
                     @error('category')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
+                </div>
+
+                <!-- Temperature Options for Drinks -->
+                <div id="temperatureOptions" class="bg-blue-50 p-4 rounded-lg border border-blue-200 {{ old('category') == 'minuman' ? '' : 'hidden' }}">
+                    <label class="flex items-center mb-3">
+                        <input type="checkbox" name="has_temperature_options" id="hasTemperatureOptions" value="1" 
+                               {{ old('has_temperature_options') ? 'checked' : '' }}
+                               class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        <span class="ml-2 text-sm font-medium text-gray-700">Minuman ini memiliki pilihan varian (Ice/Hot)</span>
+                    </label>
+                    
+                    <div id="temperatureChoices" class="{{ old('has_temperature_options') ? '' : 'hidden' }}">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Pilihan Varian yang Tersedia</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center">
+                                <input type="checkbox" name="temperature_options[]" value="ice" 
+                                       {{ in_array('ice', old('temperature_options', [])) ? 'checked' : '' }}
+                                       class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="ml-2 text-sm text-gray-700">🧊 Ice (Dingin)</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="temperature_options[]" value="hot" 
+                                       {{ in_array('hot', old('temperature_options', [])) ? 'checked' : '' }}
+                                       class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="ml-2 text-sm text-gray-700">🔥 Hot (Panas)</span>
+                            </label>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">Pilih minimal satu opsi varian jika diaktifkan</p>
+                    </div>
                 </div>
 
                 <div>
@@ -204,6 +233,39 @@ document.getElementById('manageStock').addEventListener('change', function() {
         stockField.classList.add('hidden');
         // Kosongkan value jika tidak dikelola
         stockField.querySelector('input[name="stock"]').value = '';
+    }
+});
+
+// Toggle temperature options based on category
+document.getElementById('categorySelect').addEventListener('change', function() {
+    const temperatureOptions = document.getElementById('temperatureOptions');
+    const hasTemperatureOptions = document.getElementById('hasTemperatureOptions');
+    const temperatureChoices = document.getElementById('temperatureChoices');
+    
+    if (this.value === 'minuman') {
+        temperatureOptions.classList.remove('hidden');
+    } else {
+        temperatureOptions.classList.add('hidden');
+        hasTemperatureOptions.checked = false;
+        temperatureChoices.classList.add('hidden');
+        // Uncheck all temperature options
+        document.querySelectorAll('input[name="temperature_options[]"]').forEach(checkbox => {
+            checkbox.checked = false;
+        });
+    }
+});
+
+// Toggle temperature choices
+document.getElementById('hasTemperatureOptions').addEventListener('change', function() {
+    const temperatureChoices = document.getElementById('temperatureChoices');
+    if (this.checked) {
+        temperatureChoices.classList.remove('hidden');
+    } else {
+        temperatureChoices.classList.add('hidden');
+        // Uncheck all temperature options
+        document.querySelectorAll('input[name="temperature_options[]"]').forEach(checkbox => {
+            checkbox.checked = false;
+        });
     }
 });
 

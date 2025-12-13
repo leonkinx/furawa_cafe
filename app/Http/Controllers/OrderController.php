@@ -17,6 +17,16 @@ class OrderController extends Controller
     {
         Log::info('=== ORDER STORE REQUEST ===');
         Log::info('Request Data:', $request->all());
+        Log::info('Items Detail:', $request->input('items', []));
+        
+        // Log setiap item secara detail dari request
+        foreach ($request->input('items', []) as $index => $item) {
+            Log::info("Raw Item {$index}:", [
+                'menu_id' => $item['menu_id'] ?? 'missing',
+                'quantity' => $item['quantity'] ?? 'missing', 
+                'temperature' => $item['temperature'] ?? 'NULL'
+            ]);
+        }
         
         try {
             // Validasi data
@@ -27,6 +37,7 @@ class OrderController extends Controller
                 'items' => 'required|array|min:1',
                 'items.*.menu_id' => 'required|exists:menus,id',
                 'items.*.quantity' => 'required|integer|min:1',
+                'items.*.temperature' => 'nullable|string|in:ice,hot',
                 'subtotal' => 'required|numeric|min:0',
                 'ppn_amount' => 'required|numeric|min:0',
                 'service_charge' => 'required|numeric|min:0',
@@ -34,6 +45,15 @@ class OrderController extends Controller
             ]);
             
             Log::info('Validated Data:', $validated);
+            
+            // Log setiap item secara detail dari validated data
+            foreach ($validated['items'] as $index => $item) {
+                Log::info("Validated Item {$index}:", [
+                    'menu_id' => $item['menu_id'] ?? 'missing',
+                    'quantity' => $item['quantity'] ?? 'missing', 
+                    'temperature' => $item['temperature'] ?? 'NULL'
+                ]);
+            }
             
             // ✅ FIX: Cek dan handle table_id untuk foreign key constraint
             $tableId = $validated['table_id'];
@@ -86,6 +106,19 @@ class OrderController extends Controller
             // Tentukan payment status
             $paymentStatus = $validated['payment_method'] === 'cash' ? 'pending' : 'unpaid';
             
+            // Calculate percentages for display
+            $ppnPercentage = 0;
+            $serviceChargePercentage = 0;
+            
+            if ($validated['subtotal'] > 0) {
+                if ($validated['ppn_amount'] > 0) {
+                    $ppnPercentage = ($validated['ppn_amount'] / $validated['subtotal']) * 100;
+                }
+                if ($validated['service_charge'] > 0) {
+                    $serviceChargePercentage = ($validated['service_charge'] / $validated['subtotal']) * 100;
+                }
+            }
+            
             // Create order dengan table_id yang sudah divalidasi
             $order = Order::create([
                 'order_code' => $orderCode,
@@ -94,7 +127,9 @@ class OrderController extends Controller
                 'payment_method' => $validated['payment_method'],
                 'subtotal' => $validated['subtotal'],
                 'ppn_amount' => $validated['ppn_amount'],
+                'ppn_percentage' => $ppnPercentage,
                 'service_charge' => $validated['service_charge'],
+                'service_charge_percentage' => $serviceChargePercentage,
                 'total_amount' => $validated['total_amount'],
                 'status' => 'pending',
                 'payment_status' => $paymentStatus
@@ -102,29 +137,53 @@ class OrderController extends Controller
             
             Log::info('Order created. ID: ' . $order->id);
             
-            // Create order items
+            // Validate stock before creating order items
             foreach ($validated['items'] as $itemData) {
                 $menu = Menu::find($itemData['menu_id']);
                 
                 if (!$menu) {
-                    throw new \Exception('Menu not found: ' . $itemData['menu_id']);
+                    DB::rollBack();
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Menu tidak ditemukan'
+                    ], 400);
                 }
+                
+                // Check stock availability
+                if ($menu->stock !== null && $menu->stock < $itemData['quantity']) {
+                    DB::rollBack();
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Maaf, stok {$menu->name} tidak mencukupi! 😔\nStok tersedia: {$menu->stock}\nJumlah yang dipesan: {$itemData['quantity']}\n\nSilakan kurangi jumlah pesanan atau pilih menu lain. 🙏",
+                        'error_type' => 'stock_insufficient',
+                        'menu_name' => $menu->name,
+                        'available_stock' => $menu->stock,
+                        'requested_quantity' => $itemData['quantity']
+                    ], 400);
+                }
+            }
+            
+            // Create order items after stock validation
+            foreach ($validated['items'] as $itemData) {
+                $menu = Menu::find($itemData['menu_id']);
+                
+                $temperature = $itemData['temperature'] ?? null;
                 
                 OrderItem::create([
                     'order_id' => $order->id,
                     'menu_id' => $itemData['menu_id'],
                     'quantity' => $itemData['quantity'],
-                    'price' => $menu->price
+                    'price' => $menu->price,
+                    'temperature' => $temperature
                 ]);
                 
                 Log::info('Order item created: ' . $menu->name . ' x' . $itemData['quantity'] . ' = Rp ' . number_format($menu->price * $itemData['quantity'], 0, ',', '.'));
+                Log::info('Temperature data: ' . ($temperature ?: 'NULL') . ' for menu: ' . $menu->name);
                 
-                // Update stock jika dikelola
-                if ($menu->stock !== null && $menu->stock >= $itemData['quantity']) {
+                // Update stock
+                if ($menu->stock !== null) {
                     $menu->decrement('stock', $itemData['quantity']);
                     Log::info('Stock updated for ' . $menu->name . ': -' . $itemData['quantity']);
-                } elseif ($menu->stock !== null && $menu->stock < $itemData['quantity']) {
-                    throw new \Exception('Stok ' . $menu->name . ' tidak cukup. Stok tersedia: ' . $menu->stock);
                 }
             }
             
@@ -201,90 +260,98 @@ class OrderController extends Controller
     public function cancel(Order $order)
     {
         if ($order->status === 'pending') {
-            $order->update(['status' => 'cancelled']);
-            return redirect()->route('orders.index')->with('success', 'Pesanan berhasil dibatalkan');
+            DB::beginTransaction();
+            
+            try {
+                // Restore stock for cancelled items
+                foreach ($order->orderItems as $item) {
+                    if ($item->menu && $item->menu->stock !== null) {
+                        $item->menu->increment('stock', $item->quantity);
+                    }
+                }
+                
+                $order->update([
+                    'status' => 'cancelled',
+                    'payment_status' => 'failed'
+                ]);
+                
+                DB::commit();
+                
+                return redirect()->route('orders.index')->with('success', 'Pesanan berhasil dibatalkan');
+                
+            } catch (\Exception $e) {
+                DB::rollBack();
+                \Log::error('Error cancelling order: ' . $e->getMessage());
+                return redirect()->back()->with('error', 'Terjadi kesalahan saat membatalkan pesanan');
+            }
         }
         
         return redirect()->back()->with('error', 'Tidak dapat membatalkan pesanan yang sudah diproses');
     }
-    
-    public function getOrderStatus()
+
+    public function cancelByCode($order_code)
     {
-        // Optimized: hanya ambil field yang diperlukan, limit results
-        $orders = Order::select([
-                'id', 
-                'order_code', 
-                'customer_name', 
-                'table_id', 
-                'total_amount', 
-                'status', 
-                'payment_status',
-                'payment_method',
-                'created_at'
-            ])
-            ->with(['orderItems' => function($query) {
-                $query->select('id', 'order_id', 'menu_id', 'quantity', 'price')
-                    ->with(['menu' => function($q) {
-                        $q->select('id', 'name', 'price'); // Hanya field penting
-                    }]);
-            }])
-            ->orderBy('created_at', 'desc')
-            ->limit(50) // Limit untuk performa
-            ->get();
-        
-        return response()->json([
-            'success' => true,
-            'orders' => $orders
-        ]);
-    }
-    
-    public function customerOrderStatus()
-    {
-        return view('customer.order-status');
-    }
-    
-    public function checkOrderStatus(Request $request)
-    {
-        $request->validate([
-            'order_code' => 'required|string'
-        ]);
-        
-        // Optimized: select hanya field yang diperlukan
-        $order = Order::select([
-                'id',
-                'order_code',
-                'customer_name',
-                'table_id',
-                'total_amount',
-                'status',
-                'payment_status',
-                'payment_method',
-                'created_at'
-            ])
-            ->where('order_code', $request->order_code)
-            ->with(['orderItems' => function($query) {
-                $query->select('id', 'order_id', 'menu_id', 'quantity', 'price')
-                    ->with(['menu' => function($q) {
-                        $q->select('id', 'name', 'price');
-                    }]);
-            }])
-            ->first();
+        try {
+            $order = Order::where('order_code', $order_code)->first();
             
-        if (!$order) {
+            if (!$order) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pesanan tidak ditemukan'
+                ], 404);
+            }
+            
+            if ($order->status !== 'pending') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pesanan tidak dapat dibatalkan karena sudah diproses'
+                ], 400);
+            }
+            
+            DB::beginTransaction();
+            
+            try {
+                // Restore stock for cancelled items
+                foreach ($order->orderItems as $item) {
+                    if ($item->menu && $item->menu->stock !== null) {
+                        $item->menu->increment('stock', $item->quantity);
+                    }
+                }
+                
+                // Update order status - gunakan method update() yang aman
+                $order->update([
+                    'status' => 'cancelled',
+                    'payment_status' => 'failed' // Gunakan 'failed' karena 'cancelled' tidak ada di enum
+                ]);
+                
+                DB::commit();
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Pesanan berhasil dibatalkan'
+                ]);
+                
+            } catch (\Exception $e) {
+                DB::rollBack();
+                throw $e;
+            }
+            
+        } catch (\Exception $e) {
+            \Log::error('Error cancelling order: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            
             return response()->json([
                 'success' => false,
-                'message' => 'Pesanan tidak ditemukan. Pastikan kode pesanan benar.'
-            ], 404);
+                'message' => 'Terjadi kesalahan saat membatalkan pesanan: ' . $e->getMessage()
+            ], 500);
         }
-        
-        // Optimized: hapus duplikasi data, format di frontend
-        return response()->json([
-            'success' => true,
-            'order' => $order,
-            'status_text' => $order->getStatusText(),
-            'payment_status_text' => $order->getPaymentStatusText()
-        ]);
     }
+    
+
+    
+
+    
+
     
     public function trackOrder($order_code)
     {
@@ -293,5 +360,20 @@ class OrderController extends Controller
             ->firstOrFail();
             
         return view('customer.order-track', compact('order'));
+    }
+    
+    public function showReceipt($order_code)
+    {
+        $order = Order::where('order_code', $order_code)
+            ->with('orderItems.menu')
+            ->firstOrFail();
+        
+        // Only allow receipt access for completed orders
+        if ($order->status !== 'completed') {
+            return redirect()->route('orders.track', $order_code)
+                ->with('error', 'Struk hanya dapat diakses setelah pesanan selesai.');
+        }
+            
+        return view('customer.receipt', compact('order'));
     }
 }

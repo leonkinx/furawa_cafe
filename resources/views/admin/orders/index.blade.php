@@ -181,7 +181,17 @@
                             <td class="px-3 sm:px-6 py-3 sm:py-4">
                                 <div class="text-xs sm:text-sm text-gray-700 min-w-[150px]">
                                     @foreach($order->orderItems->take(2) as $item)
-                                    <div class="truncate">{{ $item->menu->name }} × {{ $item->quantity }}</div>
+                                    <div class="truncate flex items-center gap-1">
+                                        <span>{{ $item->menu->name }}</span>
+                                        @if($item->temperature)
+                                            @if($item->temperature === 'ice')
+                                                <span class="text-blue-600 font-medium">🧊</span>
+                                            @elseif($item->temperature === 'hot')
+                                                <span class="text-red-600 font-medium">🔥</span>
+                                            @endif
+                                        @endif
+                                        <span>× {{ $item->quantity }}</span>
+                                    </div>
                                     @endforeach
                                     @if($order->orderItems->count() > 2)
                                     <div class="text-xs text-gray-400 mt-1">+{{ $order->orderItems->count() - 2 }} item lainnya</div>

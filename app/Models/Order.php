@@ -42,14 +42,14 @@ class Order extends Model
         self::STATUS_PAID => 'Sudah Dibayar',
         self::STATUS_PROCESSING => 'Sedang Diproses',
         self::STATUS_COMPLETED => 'Selesai',
-        self::STATUS_CANCELLED => 'Dibatalkan'
+        self::STATUS_CANCELLED => 'Pesanan Dibatalkan'
     ];
     
     public static $paymentStatusLabels = [
         self::PAYMENT_STATUS_PENDING => 'Menunggu Pembayaran',
         self::PAYMENT_STATUS_PAID => 'Lunas',
         self::PAYMENT_STATUS_UNPAID => 'Belum Bayar',
-        self::PAYMENT_STATUS_FAILED => 'Gagal'
+        self::PAYMENT_STATUS_FAILED => 'Dibatalkan'
     ];
 
     protected $fillable = [
@@ -60,7 +60,9 @@ class Order extends Model
         'total_amount',
         'subtotal',
         'ppn_amount',
+        'ppn_percentage',
         'service_charge',
+        'service_charge_percentage',
         'payment_method',
         'payment_status',
         'notes'
@@ -70,7 +72,9 @@ class Order extends Model
         'total_amount' => 'decimal:2',
         'subtotal' => 'decimal:2',
         'ppn_amount' => 'decimal:2',
+        'ppn_percentage' => 'decimal:2',
         'service_charge' => 'decimal:2',
+        'service_charge_percentage' => 'decimal:2',
         'created_at' => 'datetime',
         'updated_at' => 'datetime'
     ];
@@ -133,6 +137,11 @@ class Order extends Model
 
     public function getPaymentStatusText()
     {
+        // Jika order dibatalkan, tampilkan "Pesanan Dibatalkan" untuk payment status
+        if ($this->status === self::STATUS_CANCELLED) {
+            return 'Pesanan Dibatalkan';
+        }
+        
         return self::$paymentStatusLabels[$this->payment_status] ?? $this->payment_status;
     }
     
@@ -186,6 +195,11 @@ class Order extends Model
         // Logika otomatis
         if ($newStatus === self::STATUS_COMPLETED && $this->payment_status === self::PAYMENT_STATUS_UNPAID) {
             $this->payment_status = self::PAYMENT_STATUS_PAID;
+        }
+        
+        // Jika order dibatalkan, set payment status ke failed
+        if ($newStatus === self::STATUS_CANCELLED) {
+            $this->payment_status = self::PAYMENT_STATUS_FAILED;
         }
         
         return $this->save();

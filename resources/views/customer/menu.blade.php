@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Storage;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Menu - Furawa Cafe</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    @vite(['resources/css/app.css'])
+    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -126,35 +126,41 @@ use Illuminate\Support\Facades\Storage;
         width: 100%;
     }
     
-    /* Mobile: 1 column with proper spacing */
+    /* Ensure cards have minimum width to prevent content cramping */
+    .menu-item {
+        min-width: 0; /* Allow flex shrinking */
+        width: 100%;
+    }
+    
+    /* Mobile: 2 columns with better spacing */
     @media (max-width: 767px) {
         .menu-grid {
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(2, 1fr);
             gap: 1.25rem;
             padding: 0 0.75rem;
         }
         
         /* Extra spacing for main container on mobile */
         .main-container {
-            padding: 0 1.25rem;
+            padding: 0 1rem;
         }
     }
     
-    /* Tablet: 2 columns */
+    /* Tablet: 2 columns with improved spacing */
     @media (min-width: 768px) and (max-width: 1023px) {
         .menu-grid {
             grid-template-columns: repeat(2, 1fr);
-            gap: 1.5rem;
-            padding: 0 0.5rem;
+            gap: 1.75rem;
+            padding: 0 1rem;
         }
     }
     
-    /* Desktop: 3 columns with better spacing */
+    /* Desktop: 3 columns with optimal spacing */
     @media (min-width: 1024px) {
         .menu-grid {
             grid-template-columns: repeat(3, 1fr);
-            gap: 2rem;
-            padding: 0 0.5rem;
+            gap: 2.25rem;
+            padding: 0 1rem;
         }
     }
     
@@ -340,8 +346,8 @@ use Illuminate\Support\Facades\Storage;
     .category-scroll {
         display: flex;
         overflow-x: auto;
-        gap: 12px;
-        padding-bottom: 12px;
+        gap: 14px;
+        padding: 8px 2rem 16px 2rem;
         scrollbar-width: none;
         -ms-overflow-style: none;
     }
@@ -352,9 +358,9 @@ use Illuminate\Support\Facades\Storage;
     
     .category-card {
         flex: 0 0 auto;
-        width: 100px;
-        height: 100px;
-        border-radius: 14px;
+        width: 70px;
+        height: 70px;
+        border-radius: 10px;
         overflow: hidden;
         position: relative;
         cursor: pointer;
@@ -385,13 +391,13 @@ use Illuminate\Support\Facades\Storage;
         right: 0;
         background: linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.3) 70%, transparent);
         color: white;
-        padding: 12px 8px;
+        padding: 8px 4px;
         text-align: center;
     }
     
     .category-name {
         font-weight: 600;
-        font-size: 13px;
+        font-size: 11px;
         margin: 0;
         text-shadow: 0 2px 4px rgba(0,0,0,0.3);
     }
@@ -421,8 +427,13 @@ use Illuminate\Support\Facades\Storage;
         }
         
         .category-card {
-            width: 90px;
-            height: 90px;
+            width: 65px;
+            height: 65px;
+        }
+        
+        .category-scroll {
+            padding: 8px 2rem 16px 2rem;
+            gap: 12px;
         }
         
         .menu-image-container {
@@ -431,16 +442,27 @@ use Illuminate\Support\Facades\Storage;
         
         /* Ensure menu items have proper spacing on mobile */
         .menu-item {
-            margin-left: 0.25rem;
-            margin-right: 0.25rem;
+            margin: 0;
+        }
+        
+        /* Better spacing for 2-column layout on mobile */
+        .menu-grid {
+            padding: 0 0.75rem;
         }
         
         /* Better section header spacing on mobile */
         .makanan-section h2,
         .minuman-section h2,
         .snack-section h2 {
-            margin-left: 0.5rem;
-            margin-right: 0.5rem;
+            margin-left: 1rem;
+            margin-right: 1rem;
+        }
+        
+        /* Section container spacing */
+        .makanan-section,
+        .minuman-section,
+        .snack-section {
+            margin-bottom: 1.5rem;
         }
     }
 
@@ -582,7 +604,6 @@ use Illuminate\Support\Facades\Storage;
     
     /* Modal Backdrop - Transparent with subtle overlay */
     #cartModal::before,
-    #orderModal::before,
     #paymentModal::before,
     #successModal::before,
     #detailsModal::before {
@@ -748,6 +769,58 @@ use Illuminate\Support\Facades\Storage;
     .modern-alert-overlay.closing .modern-alert-content {
         animation: slideDown 0.2s ease-out forwards;
     }
+
+    /* Stock Error Modal Specific Styles */
+    .modern-alert-content.stock-error {
+        max-width: 380px;
+    }
+
+    .stock-error-details {
+        text-align: center;
+        margin-bottom: 1.25rem;
+    }
+
+    .stock-error-details .menu-name {
+        font-weight: 600;
+        color: #dc2626;
+        font-size: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .stock-info {
+        background: #f9fafb;
+        border-radius: 8px;
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .stock-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .stock-row:last-child {
+        margin-bottom: 0;
+    }
+
+    .stock-row .available {
+        font-weight: 600;
+        color: #059669;
+    }
+
+    .stock-row .requested {
+        font-weight: 600;
+        color: #dc2626;
+    }
+
+    .help-text {
+        font-size: 0.75rem;
+        color: #6b7280;
+        font-style: italic;
+    }
     
     /* Responsive untuk mobile */
     @media (max-width: 640px) {
@@ -864,28 +937,28 @@ use Illuminate\Support\Facades\Storage;
 <body class="bg-gray-50 pb-20 md:pb-8">
     <!-- Header - Responsive Design with Better Height -->
     <div class="bg-white shadow-sm sticky top-0 z-30 backdrop-blur-sm bg-opacity-95 border-b border-gray-100">
-        <div class="main-container py-4 md:py-5 lg:py-6">
+        <div class="main-container py-6 md:py-8 lg:py-10">
             <div class="flex justify-between items-center">
                 <div>
-                    <h1 class="text-lg md:text-xl lg:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">FURAWA CAFE</h1>
+                    <h1 class="text-base md:text-lg lg:text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">FURAWA CAFE</h1>
                 </div>
-                <div class="flex items-center space-x-3">
+                <div class="flex items-center space-x-2 md:space-x-3">
                     <div id="cartSummary" class="hidden">
-                        <span id="cartCount" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full w-6 h-6 md:w-7 md:h-7 flex items-center justify-center text-xs md:text-sm font-semibold shadow-lg">0</span>
+                        <span id="cartCount" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full w-5 h-5 md:w-6 md:h-6 flex items-center justify-center text-xs font-semibold shadow-lg">0</span>
                     </div>
-                    <button id="cartButton" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 md:px-5 py-2.5 md:py-3 rounded-lg md:rounded-xl hover:shadow-lg transition-all duration-300 text-sm md:text-base">
+                    <button id="cartButton" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-3 md:px-4 py-2 md:py-2.5 rounded-lg hover:shadow-lg transition-all duration-300 text-sm">
                         <i class="fas fa-shopping-cart"></i>
-                        <span class="hidden md:inline ml-2">Keranjang</span>
+                        <span class="hidden sm:inline ml-2">Keranjang</span>
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="main-container py-4 md:py-6 lg:py-8">
+    <div class="main-container py-6 md:py-8 lg:py-10">
        
     <!-- Carousel Wrapper - Responsive -->
-    <div class="carousel-container">
+    <div class="carousel-container mt-4 md:mt-6 lg:mt-8">
 
         <!-- Slide 1 -->
         <img 
@@ -942,8 +1015,8 @@ use Illuminate\Support\Facades\Storage;
         </div>
 
         <!-- Horizontal Categories - Responsive Design -->
-        <div class="mb-5 md:mb-8 lg:mb-10">
-            <h2 class="text-lg md:text-xl lg:text-2xl font-bold text-gray-800 mb-3 md:mb-4 flex items-center">
+        <div class="mb-5 md:mb-6 lg:mb-8">
+            <h2 class="text-lg md:text-xl lg:text-2xl font-bold text-gray-800 mb-2 md:mb-3 flex items-center px-4 md:px-0">
                 <span class="w-1 h-5 md:h-6 bg-gradient-to-b from-indigo-600 to-purple-600 rounded-full mr-2 md:mr-3"></span>
                 Kategori Menu
             </h2>
@@ -1135,9 +1208,9 @@ use Illuminate\Support\Facades\Storage;
             <div class="mb-6 md:mb-8 snack-section">
                 <div class="flex items-center mb-4">
                     <div class="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center text-xl shadow-md">
-                        🍿
+                        🍰
                     </div>
-                    <h2 class="text-xl md:text-2xl font-bold text-gray-800 ml-3">Snack</h2>
+                    <h2 class="text-xl md:text-2xl font-bold text-gray-800 ml-3">Dessert</h2>
                 </div>
                 <div class="menu-grid grid">
                     @foreach($categories['snack'] as $menu)
@@ -1395,9 +1468,15 @@ use Illuminate\Support\Facades\Storage;
                 </div>
                 <h3 class="text-xl font-bold text-gray-900 mb-2">Pesanan Berhasil!</h3>
                 <p id="successMessage" class="text-gray-600 text-sm mb-5 leading-relaxed"></p>
-                <button id="closeSuccess" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-lg hover:shadow-lg transition-all duration-300 font-semibold text-sm">
-                    Kembali ke Menu
-                </button>
+                <div class="space-y-2">
+                    <button id="closeSuccess" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-lg hover:shadow-lg transition-all duration-300 font-semibold text-sm">
+                        Kembali ke Menu
+                    </button>
+                    <p class="text-xs text-gray-500 text-center mt-2">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Struk dapat diakses setelah pesanan selesai
+                    </p>
+                </div>
             </div>
         </div>
     </div>
@@ -1421,34 +1500,31 @@ use Illuminate\Support\Facades\Storage;
         </div>
     </div>
 
-    <!-- Order Status Modal - Minimalist with Auto Refresh -->
-    <div id="orderModal" class="fixed inset-0 bg-transparent hidden z-50">
-        <div class="flex items-center justify-center min-h-screen p-4 py-8 pb-24">
-            <div class="bg-white rounded-2xl w-full max-w-lg max-h-[80vh] overflow-hidden shadow-2xl border border-gray-200 flex flex-col">
-                <!-- Header - Fixed -->
-                <div class="flex-shrink-0 p-4 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-t-2xl">
+
+
+    <!-- Order Details Modal -->
+    <div id="orderDetailsModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-2xl w-full max-w-md max-h-[85vh] overflow-hidden shadow-2xl border border-gray-200 flex flex-col">
+                <!-- Header -->
+                <div class="flex-shrink-0 bg-gradient-to-r from-indigo-600 to-purple-600 p-4 rounded-t-2xl">
                     <div class="flex justify-between items-center">
                         <div>
-                            <h3 class="text-base font-bold text-white">Pesanan Saya</h3>
-                            <p class="text-xs text-indigo-100 mt-0.5 flex items-center">
-                                <i class="fas fa-sync-alt text-xs mr-1 refresh-indicator"></i>
-                                Auto-refresh • Hanya pesanan dari HP ini
-                            </p>
+                            <h3 class="text-lg font-bold text-white">Detail Pesanan</h3>
+                            <p class="text-indigo-100 text-sm" id="orderDetailsSubtitle">Pesanan terbaru Anda</p>
                         </div>
-                        <button id="closeOrder" class="text-white hover:bg-white hover:bg-opacity-20 w-8 h-8 rounded-full flex items-center justify-center transition-all">
-                            <i class="fas fa-times text-sm"></i>
+                        <button id="closeOrderDetails" class="text-white hover:bg-white hover:bg-opacity-20 w-8 h-8 rounded-full flex items-center justify-center transition-all">
+                            <i class="fas fa-times"></i>
                         </button>
                     </div>
                 </div>
                 
-                <!-- Content - Scrollable -->
-                <div class="flex-1 overflow-y-auto p-4 bg-gray-50">
-                    <div id="orderList" class="space-y-3 pb-4">
-                        <div class="text-center py-8 text-gray-500">
-                            <i class="fas fa-receipt text-2xl mb-2"></i>
-                            <p class="text-sm">Memuat pesanan...</p>
-                            <p class="text-xs text-gray-400 mt-1">Silakan tunggu sebentar</p>
-                        </div>
+                <!-- Content -->
+                <div class="flex-1 overflow-y-auto p-4" id="orderDetailsContent">
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fas fa-receipt text-3xl mb-3 opacity-50"></i>
+                        <p class="font-medium">Belum ada pesanan</p>
+                        <p class="text-sm text-gray-400 mt-1">Pesanan Anda akan muncul di sini</p>
                     </div>
                 </div>
             </div>
@@ -1484,8 +1560,9 @@ use Illuminate\Support\Facades\Storage;
                     <span class="text-xs font-medium">Keranjang</span>
                 </button>
                 
-                <button id="footerOrderButton" class="flex flex-col items-center text-gray-600 hover:text-indigo-600 transition-all duration-300 py-1 px-3">
+                <button id="footerOrderButton" class="flex flex-col items-center text-gray-600 hover:text-indigo-600 transition-all duration-300 py-1 px-3 relative">
                     <i class="fas fa-receipt text-lg mb-1"></i>
+                    <span id="footerOrderBadge" class="absolute -top-1 right-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold hidden shadow-lg">0</span>
                     <span class="text-xs font-medium">Pesanan</span>
                 </button>
                 
@@ -1498,9 +1575,10 @@ use Illuminate\Support\Facades\Storage;
     </div>
 
     <script>
-    // ==================== VARIABLES ====================
-    let cart = {}; // Cart yang sebenarnya (setelah klik "Pesan")
-    let tempQuantity = {}; // Temporary quantity (saat klik +/-)
+    // ==================== VARIABLES - REDESIGNED FOR TEMPERATURE VARIANTS ====================
+    let cart = {}; // Cart: { "menuId_temperature": quantity } - supports multiple temps per menu
+    let tempQuantity = {}; // Temporary: { "menuId_temperature": quantity }
+    let selectedTemperature = {}; // Current selected temperature per menu: { menuId: "ice"/"hot" }
     let currentOrderData = null;
     let serviceChargePercentage = 3; // Default 3%, will be loaded from API
     let currentSlide = 0;
@@ -1539,6 +1617,58 @@ use Illuminate\Support\Facades\Storage;
                 <p class="modern-alert-message">${message}</p>
                 <button class="modern-alert-button">
                     Oke, Mengerti
+                </button>
+            </div>
+        `;
+        
+        document.body.appendChild(overlay);
+        
+        // Close on button click
+        const button = overlay.querySelector('.modern-alert-button');
+        button.addEventListener('click', () => {
+            overlay.classList.add('closing');
+            setTimeout(() => {
+                document.body.removeChild(overlay);
+            }, 200);
+        });
+        
+        // Close on overlay click
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                overlay.classList.add('closing');
+                setTimeout(() => {
+                    document.body.removeChild(overlay);
+                }, 200);
+            }
+        });
+    }
+
+    function showStockErrorModal(errorData) {
+        // Create unique stock error modal
+        const overlay = document.createElement('div');
+        overlay.className = 'modern-alert-overlay';
+        overlay.innerHTML = `
+            <div class="modern-alert-content stock-error">
+                <div class="modern-alert-icon error">
+                    📦
+                </div>
+                <h3 class="modern-alert-title">Stok Tidak Mencukupi!</h3>
+                <div class="stock-error-details">
+                    <p class="menu-name">${errorData.menu_name}</p>
+                    <div class="stock-info">
+                        <div class="stock-row">
+                            <span>Stok tersedia:</span>
+                            <span class="available">${errorData.available_stock}</span>
+                        </div>
+                        <div class="stock-row">
+                            <span>Yang dipesan:</span>
+                            <span class="requested">${errorData.requested_quantity}</span>
+                        </div>
+                    </div>
+                    <p class="help-text">Silakan kurangi jumlah pesanan atau pilih menu lain 🙏</p>
+                </div>
+                <button class="modern-alert-button">
+                    Oke, Saya Mengerti
                 </button>
             </div>
         `;
@@ -1654,16 +1784,20 @@ use Illuminate\Support\Facades\Storage;
     function updateQuantityDisplay(menuId) {
         const display = document.querySelector(`.quantity-display[data-menu-id="${menuId}"]`);
         if (display) {
-            // Tampilkan tempQuantity (yang sedang dipilih), bukan cart
-            display.textContent = tempQuantity[menuId] || 0;
+            // Show quantity for currently selected temperature
+            const currentTemp = selectedTemperature[menuId] || 'normal';
+            const cartKey = `${menuId}_${currentTemp}`;
+            display.textContent = tempQuantity[cartKey] || 0;
         }
     }
 
     function updateAllQuantityDisplays() {
         document.querySelectorAll('.quantity-display').forEach(display => {
             const menuId = display.dataset.menuId;
-            // Reset ke 0 karena tempQuantity sudah masuk cart
-            display.textContent = tempQuantity[menuId] || 0;
+            // Show quantity for currently selected temperature
+            const currentTemp = selectedTemperature[menuId] || 'normal';
+            const cartKey = `${menuId}_${currentTemp}`;
+            display.textContent = tempQuantity[cartKey] || 0;
         });
     }
 
@@ -1682,6 +1816,17 @@ use Illuminate\Support\Facades\Storage;
             cartSummary.classList.add('hidden');
             footerCartCount.classList.add('hidden');
         }
+        
+        // Update order badge
+        updateOrderBadge();
+    }
+    
+    function updateOrderBadge() {
+        const myOrderCodes = getMyOrderCodes();
+        const orderBadge = document.getElementById('footerOrderBadge');
+        
+        // Selalu sembunyikan badge, tidak menampilkan angka apapun
+        orderBadge.classList.add('hidden');
     }
 
     function calculateTotal() {
@@ -1689,13 +1834,14 @@ use Illuminate\Support\Facades\Storage;
         let totalPpn = 0;
         let serviceCharge = 0;
         
-        for (const menuId in cart) {
-            if (cart[menuId] > 0) {
+        for (const cartKey in cart) {
+            if (cart[cartKey] > 0) {
+                const [menuId, temperature] = cartKey.split('_');
                 const menuItem = document.querySelector(`.menu-item[data-menu-id="${menuId}"]`);
                 if (menuItem) {
                     const basePrice = parseFloat(menuItem.dataset.basePrice || 0);
                     const ppnAmount = parseFloat(menuItem.dataset.ppnAmount || 0);
-                    const quantity = cart[menuId];
+                    const quantity = cart[cartKey];
                     
                     subtotal += basePrice * quantity;
                     totalPpn += ppnAmount * quantity;
@@ -1726,10 +1872,11 @@ use Illuminate\Support\Facades\Storage;
         
         let hasItems = false;
         
-        for (const menuId in cart) {
-            const quantity = cart[menuId];
+        for (const cartKey in cart) {
+            const quantity = cart[cartKey];
             if (quantity > 0) {
                 hasItems = true;
+                const [menuId, temperature] = cartKey.split('_');
                 const menuItem = document.querySelector(`.menu-item[data-menu-id="${menuId}"]`);
                 
                 if (menuItem) {
@@ -1738,6 +1885,14 @@ use Illuminate\Support\Facades\Storage;
                     const ppnAmount = parseFloat(menuItem.dataset.ppnAmount || 0);
                     const finalPrice = basePrice + ppnAmount;
                     const itemSubtotal = finalPrice * quantity;
+                    
+                    // Format temperature display
+                    let tempDisplay = '';
+                    if (temperature === 'ice') {
+                        tempDisplay = ' 🧊 Ice';
+                    } else if (temperature === 'hot') {
+                        tempDisplay = ' 🔥 Hot';
+                    }
                     
                     const cartItem = document.createElement('div');
                     cartItem.className = 'flex justify-between items-center p-3 bg-gray-50 rounded-lg';
@@ -1749,12 +1904,12 @@ use Illuminate\Support\Facades\Storage;
                     
                     cartItem.innerHTML = `
                         <div class="flex-1">
-                            <h4 class="font-semibold text-gray-800">${name}</h4>
+                            <h4 class="font-semibold text-gray-800">${name}${tempDisplay}</h4>
                             <p class="text-sm text-gray-600">${priceDisplay} × ${quantity}</p>
                         </div>
                         <div class="text-right">
                             <p class="font-semibold text-gray-900">Rp ${itemSubtotal.toLocaleString('id-ID')}</p>
-                            <button class="remove-item text-red-500 text-sm mt-1 hover:text-red-700 transition-colors" data-menu-id="${menuId}">
+                            <button class="remove-item text-red-500 text-sm mt-1 hover:text-red-700 transition-colors" data-cart-key="${cartKey}">
                                 <i class="fas fa-trash mr-1"></i>Hapus
                             </button>
                         </div>
@@ -1797,10 +1952,11 @@ use Illuminate\Support\Facades\Storage;
             // Add event listeners for remove buttons
             document.querySelectorAll('.remove-item').forEach(btn => {
                 btn.addEventListener('click', function() {
-                    const menuId = this.dataset.menuId;
-                    delete cart[menuId];
+                    const cartKey = this.dataset.cartKey;
+                    const [menuId, temperature] = cartKey.split('_');
+                    delete cart[cartKey];
                     // Reset tempQuantity juga
-                    tempQuantity[menuId] = 0;
+                    tempQuantity[cartKey] = 0;
                     updateCartSummary();
                     updateQuantityDisplay(menuId);
                     showCart();
@@ -1983,15 +2139,34 @@ use Illuminate\Support\Facades\Storage;
             items: []
         };
         
-        // Konversi cart ke array items
-        for (const menuId in orderData.items) {
-            if (orderData.items[menuId] > 0) {
-                formattedData.items.push({
+        // Konversi cart ke array items (with temperature variants)
+        console.log('DEBUG: Cart data before processing:', orderData.items);
+        
+        for (const cartKey in orderData.items) {
+            if (orderData.items[cartKey] > 0) {
+                const [menuId, temperature] = cartKey.split('_');
+                const item = {
                     menu_id: parseInt(menuId),
-                    quantity: parseInt(orderData.items[menuId])
+                    quantity: parseInt(orderData.items[cartKey])
+                };
+                
+                // Add temperature (ice, hot, or normal)
+                if (temperature && temperature !== 'normal') {
+                    item.temperature = temperature;
+                }
+                
+                console.log('DEBUG: Processing cart item:', {
+                    cartKey,
+                    menuId,
+                    temperature,
+                    finalItem: item
                 });
+                
+                formattedData.items.push(item);
             }
         }
+        
+        console.log('DEBUG: Final formatted data:', formattedData);
         
 
         
@@ -2007,8 +2182,10 @@ use Illuminate\Support\Facades\Storage;
         })
         .then(response => {
             if (!response.ok) {
-                return response.text().then(text => {
-                    throw new Error(`Server error ${response.status}: ${text}`);
+                return response.json().then(data => {
+                    throw new Error(JSON.stringify(data));
+                }).catch(() => {
+                    throw new Error(`Server error ${response.status}`);
                 });
             }
             return response.json();
@@ -2022,10 +2199,23 @@ use Illuminate\Support\Facades\Storage;
                 // Simpan order code ke localStorage untuk tracking
                 saveMyOrderCode(data.order.order_code);
                 
+                // Simpan detail pesanan ke localStorage
+                const orderDetails = {
+                    order_code: data.order.order_code,
+                    customer_name: data.order.customer_name,
+                    table_id: data.order.table_id,
+                    total_amount: data.order.total_amount,
+                    items: cart, // Simpan items yang dipesan
+                    created_at: new Date().toISOString(),
+                    payment_method: currentOrderData.payment_method
+                };
+                localStorage.setItem(`order_${data.order.order_code}`, JSON.stringify(orderDetails));
+                
                 showSuccessModal(data.order);
                 // Reset cart dan tempQuantity
                 cart = {};
                 tempQuantity = {};
+                selectedTemperature = {};
                 updateCartSummary();
                 updateAllQuantityDisplays();
             } else {
@@ -2035,7 +2225,24 @@ use Illuminate\Support\Facades\Storage;
         .catch(error => {
             hideLoading();
             console.error('Error:', error);
-            showModernAlert('Koneksi bermasalah nih. Cek internet kamu ya! 📶', 'error');
+            
+            // Try to parse error message for better handling
+            try {
+                const errorData = JSON.parse(error.message);
+                if (errorData.error_type === 'stock_insufficient') {
+                    // Show special stock error notification
+                    showStockErrorModal(errorData);
+                } else {
+                    showModernAlert(errorData.message || 'Terjadi kesalahan saat memproses pesanan', 'error');
+                }
+            } catch (parseError) {
+                // Fallback for non-JSON errors
+                if (error.message.includes('Stok') && error.message.includes('tidak cukup')) {
+                    showModernAlert(error.message, 'error');
+                } else {
+                    showModernAlert('Koneksi bermasalah nih. Cek internet kamu ya! 📶', 'error');
+                }
+            }
         });
     }
 
@@ -2052,166 +2259,166 @@ use Illuminate\Support\Facades\Storage;
 
     // ==================== ORDER STATUS FUNCTIONS ====================
     let orderStatusInterval = null;
-    let lastOrderStatuses = {};
+
     
-    function showOrderStatus() {
-        const modal = document.getElementById('orderModal');
+    // ==================== ORDER DETAILS MODAL ====================
+    function showOrderDetails() {
+        const modal = document.getElementById('orderDetailsModal');
+        const content = document.getElementById('orderDetailsContent');
+        const subtitle = document.getElementById('orderDetailsSubtitle');
         
-        // Tampilkan modal dulu
+        // Ambil pesanan terbaru dari localStorage
+        const myOrderCodes = getMyOrderCodes();
+        
+        if (myOrderCodes.length === 0) {
+            // Tidak ada pesanan
+            content.innerHTML = `
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fas fa-receipt text-3xl mb-3 opacity-50"></i>
+                    <p class="font-medium">Belum ada pesanan</p>
+                    <p class="text-sm text-gray-400 mt-1">Pesanan Anda akan muncul di sini setelah melakukan pemesanan</p>
+                    <button onclick="hideOrderDetails()" class="mt-4 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-indigo-700 transition-colors">
+                        Mulai Pesan
+                    </button>
+                </div>
+            `;
+            subtitle.textContent = 'Belum ada pesanan';
+        } else {
+            // Ada pesanan, tampilkan yang terbaru
+            const latestOrderCode = myOrderCodes[myOrderCodes.length - 1];
+            subtitle.textContent = `Kode: ${latestOrderCode}`;
+            
+            // Tampilkan loading dulu
+            content.innerHTML = `
+                <div class="text-center py-8">
+                    <div class="animate-spin w-8 h-8 border-2 border-indigo-600 border-t-transparent rounded-full mx-auto mb-3"></div>
+                    <p class="text-gray-600">Memuat detail pesanan...</p>
+                </div>
+            `;
+            
+            // Load detail pesanan dari server (jika diperlukan) atau dari localStorage
+            loadOrderDetails(latestOrderCode);
+        }
+        
         modal.classList.remove('hidden');
-        
-        // Load orders pertama kali tanpa loading overlay
-        loadOrders(false);
-        
-        // Auto refresh setiap 5 detik
-        if (orderStatusInterval) {
-            clearInterval(orderStatusInterval);
-        }
-        orderStatusInterval = setInterval(() => {
-            loadOrders(false); // false = tidak show loading
-        }, 5000);
     }
     
-    function loadOrders(showLoadingOverlay = true) {
-        if (showLoadingOverlay) {
-            showLoading();
-        }
-        
-        fetch('/api/orders/my-orders')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (showLoadingOverlay) {
-                    hideLoading();
-                }
-                
-                // Handle new response format
-                const allOrders = data.success ? data.orders : [];
-                
-                // Filter hanya pesanan milik device ini
-                const myOrderCodes = getMyOrderCodes();
-                const orders = allOrders.filter(order => myOrderCodes.includes(order.order_code));
-                
-                // Cek perubahan status dan tampilkan notifikasi
-                orders.forEach(order => {
-                    const oldStatus = lastOrderStatuses[order.order_code];
-                    if (oldStatus && oldStatus !== order.status) {
-                        showStatusChangeNotification(order);
-                    }
-                    lastOrderStatuses[order.order_code] = order.status;
-                });
-                
-                const orderList = document.getElementById('orderList');
-                
-                if (!orders || orders.length === 0) {
-                    orderList.innerHTML = `
-                        <div class="text-center py-12 text-gray-500">
-                            <div class="w-20 h-20 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <i class="fas fa-receipt text-3xl text-indigo-300"></i>
-                            </div>
-                            <p class="font-bold text-gray-700 text-lg">Belum Ada Pesanan</p>
-                            <p class="text-sm text-gray-500 mt-2">Pesanan yang Anda buat dari HP ini<br>akan muncul di sini</p>
-                            <div class="mt-4 p-3 bg-blue-50 rounded-lg text-left max-w-xs mx-auto">
-                                <p class="text-xs text-blue-800">
-                                    <i class="fas fa-info-circle mr-1"></i>
-                                    <strong>Info:</strong> Setiap HP hanya bisa melihat pesanan yang dibuat dari HP tersebut.
-                                </p>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    orderList.innerHTML = orders.map(order => {
-                        // Status text helper
-                        const getStatusText = (status) => {
-                            const texts = {
-                                'pending': 'Menunggu',
-                                'paid': 'Dibayar',
-                                'processing': 'Diproses',
-                                'completed': 'Selesai',
-                                'cancelled': 'Dibatalkan'
-                            };
-                            return texts[status] || status;
-                        };
-                        
-                        // Status badge class helper
-                        const getStatusBadgeClass = (status) => {
-                            const classes = {
-                                'pending': 'bg-yellow-100 text-yellow-800',
-                                'paid': 'bg-blue-100 text-blue-800',
-                                'processing': 'bg-purple-100 text-purple-800',
-                                'completed': 'bg-green-100 text-green-800',
-                                'cancelled': 'bg-red-100 text-red-800'
-                            };
-                            return classes[status] || 'bg-gray-100 text-gray-800';
-                        };
-                        
-                        return `
-                            <div class="bg-white rounded-xl p-4 border border-gray-200">
-                                <div class="flex justify-between items-start mb-3">
-                                    <div>
-                                        <h4 class="font-bold text-gray-900 text-base">${order.order_code}</h4>
-                                        <p class="text-sm text-gray-600 mt-1">Meja ${order.table_id} • ${order.customer_name}</p>
-                                    </div>
-                                    <span class="px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadgeClass(order.status)}">
-                                        ${getStatusText(order.status)}
-                                    </span>
-                                </div>
-
-                                <div class="flex justify-between items-center pt-3 border-t border-gray-100">
-                                    <div>
-                                        <p class="text-xs text-gray-500">Total</p>
-                                        <p class="font-bold text-indigo-600 text-lg">Rp ${parseInt(order.total_amount).toLocaleString('id-ID')}</p>
-                                    </div>
-                                    ${order.status === 'pending' ? `
-                                    <button onclick="cancelOrder('${order.order_code}')" 
-                                            class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-600 transition-colors">
-                                        Batalkan
-                                    </button>
-                                    ` : ''}
-                                </div>
-                            </div>
-                        `;
-                    }).join('');
-                }
-            })
-            .catch(error => {
-                if (showLoadingOverlay) {
-                    hideLoading();
-                }
-                console.error('Error fetching orders:', error);
-                
-                const orderList = document.getElementById('orderList');
-                if (orderList) {
-                    orderList.innerHTML = `
-                        <div class="text-center py-8 text-gray-500">
-                            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                                <i class="fas fa-exclamation-triangle text-2xl text-red-500"></i>
-                            </div>
-                            <p class="font-semibold text-gray-700">Gagal Memuat Pesanan</p>
-                            <p class="text-xs text-gray-400 mt-1">Silakan refresh halaman atau coba lagi</p>
-                            <button onclick="loadOrders(true)" class="mt-3 px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition-colors">
-                                <i class="fas fa-sync-alt mr-1"></i>Coba Lagi
-                            </button>
-                        </div>
-                    `;
-                }
-            });
+    function hideOrderDetails() {
+        document.getElementById('orderDetailsModal').classList.add('hidden');
     }
-
-    function hideOrderStatus() {
-        document.getElementById('orderModal').classList.add('hidden');
+    
+    function loadOrderDetails(orderCode) {
+        const content = document.getElementById('orderDetailsContent');
         
-        // Stop auto refresh ketika modal ditutup
-        if (orderStatusInterval) {
-            clearInterval(orderStatusInterval);
-            orderStatusInterval = null;
+        // Untuk sementara, tampilkan info pesanan dari localStorage
+        // Nanti bisa ditambahkan fetch ke server jika diperlukan
+        const orderData = localStorage.getItem(`order_${orderCode}`);
+        
+        if (orderData) {
+            try {
+                const order = JSON.parse(orderData);
+                displayOrderDetails(order, orderCode);
+            } catch (e) {
+                displayOrderNotFound(orderCode);
+            }
+        } else {
+            displayOrderNotFound(orderCode);
         }
     }
     
+    function displayOrderDetails(orderData, orderCode) {
+        const content = document.getElementById('orderDetailsContent');
+        
+        // Hitung total items
+        const totalItems = Object.values(orderData.items || {}).reduce((sum, item) => sum + item.quantity, 0);
+        
+        let itemsHtml = '';
+        if (orderData.items && Object.keys(orderData.items).length > 0) {
+            let itemIndex = 1;
+            for (const [menuId, item] in Object.entries(orderData.items)) {
+                const temperature = item.temperature ? 
+                    (item.temperature === 'ice' ? '🧊 Ice' : '🔥 Hot') : 
+                    '🌡️ Normal';
+                
+                itemsHtml += `
+                    <div class="bg-gray-50 rounded-lg p-3 mb-3">
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 bg-indigo-600 text-white rounded-lg flex items-center justify-center text-sm font-bold">
+                                ${itemIndex}
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-gray-900">${item.name}</h4>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">${temperature}</span>
+                                    <span class="text-xs text-gray-500">${item.quantity}x</span>
+                                </div>
+                                <p class="text-sm text-gray-600 mt-1">Rp ${parseInt(item.price).toLocaleString('id-ID')} / item</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-bold text-indigo-600">Rp ${parseInt(item.price * item.quantity).toLocaleString('id-ID')}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                itemIndex++;
+            }
+        }
+        
+        content.innerHTML = `
+            <div class="space-y-4">
+                <!-- Order Info -->
+                <div class="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-4 border border-indigo-200">
+                    <div class="flex items-center justify-between mb-2">
+                        <h4 class="font-bold text-gray-900">Nomor Pesanan</h4>
+                        <span class="bg-indigo-600 text-white px-3 py-1 rounded-full text-sm font-mono">${orderCode}</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <p class="text-gray-600">Customer</p>
+                            <p class="font-semibold">${orderData.customer_name || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-600">Meja</p>
+                            <p class="font-semibold">Meja ${orderData.table_id || 'N/A'}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Items -->
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="font-bold text-gray-900">Item Pesanan</h4>
+                        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">${totalItems} item</span>
+                    </div>
+                    ${itemsHtml || '<p class="text-gray-500 text-center py-4">Tidak ada item</p>'}
+                </div>
+                
+                <!-- Total -->
+                <div class="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-4 border border-green-200">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-gray-900">Total Pembayaran</span>
+                        <span class="text-xl font-bold text-green-600">Rp ${parseInt(orderData.total_amount || 0).toLocaleString('id-ID')}</span>
+                    </div>
+                </div>
+                
+                <!-- Actions -->
+                <div class="flex gap-2 pt-2">
+                    <a href="/orders/track/${orderCode}" class="flex-1 bg-indigo-600 text-white py-3 rounded-xl text-center font-medium hover:bg-indigo-700 transition-colors">
+                        <i class="fas fa-eye mr-2"></i>Lihat Detail
+                    </a>
+                    <button onclick="hideOrderDetails()" class="px-4 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+    
+    function displayOrderNotFound(orderCode) {
+        // Langsung redirect ke halaman tracking
+        window.location.href = `/orders/track/${orderCode}`;
+    }
+
     function showStatusChangeNotification(order) {
         const statusTexts = {
             'pending': 'Menunggu Pembayaran',
@@ -2270,7 +2477,7 @@ use Illuminate\Support\Facades\Storage;
         if (confirm('Yakin ingin membatalkan pesanan?')) {
             showLoading();
             
-            fetch(`/api/orders/${orderCode}/cancel`, {
+            fetch(`/orders/${orderCode}/cancel`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -2282,7 +2489,15 @@ use Illuminate\Support\Facades\Storage;
                 hideLoading();
                 if (data.success) {
                     showModernAlert('Pesanan berhasil dibatalkan! 👍', 'success');
-                    showOrderStatus();
+                    // Reset cart dan temperature selections jika ada
+                    cart = {};
+                    tempQuantity = {};
+                    selectedTemperature = {};
+                    updateCartSummary();
+                    updateAllQuantityDisplays();
+                    
+                    // Redirect ke halaman tracking pesanan
+                    window.location.href = `/orders/track/${data.order.order_code}`;
                 } else {
                     showModernAlert('Gagal batalkan pesanan: ' + data.message, 'error');
                 }
@@ -2323,6 +2538,9 @@ use Illuminate\Support\Facades\Storage;
     document.addEventListener('DOMContentLoaded', function() {
         // Load service charge first
         loadServiceChargePercentage();
+        
+        // Update order badge on page load
+        updateOrderBadge();
         
         initCarousel();
         
@@ -2482,19 +2700,103 @@ use Illuminate\Support\Facades\Storage;
             const menuId = btn.dataset.menuId;
             const isIncrease = btn.classList.contains('increase');
             
+            // Get current temperature selection for this menu
+            const currentTemp = selectedTemperature[menuId] || 'normal';
+            const cartKey = `${menuId}_${currentTemp}`;
+            
+
+            
             // Initialize tempQuantity jika belum ada
-            if (!tempQuantity[menuId]) tempQuantity[menuId] = 0;
+            if (!tempQuantity[cartKey]) tempQuantity[cartKey] = 0;
             
             if (isIncrease) {
-                tempQuantity[menuId]++;
-            } else if (tempQuantity[menuId] > 0) {
-                tempQuantity[menuId]--;
+                // Cek stok sebelum menambah quantity - SIMPLE APPROACH
+                const menuItem = btn.closest('.menu-item');
+                
+                if (menuItem) {
+                    // Cari elemen yang mengandung "Stok:"
+                    const allElements = menuItem.querySelectorAll('*');
+                    let availableStock = null;
+                    
+                    for (let element of allElements) {
+                        if (element.textContent && element.textContent.includes('Stok:')) {
+                            const match = element.textContent.match(/Stok:\s*(\d+)/);
+                            if (match) {
+                                availableStock = parseInt(match[1]);
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (availableStock !== null) {
+                        // Calculate total across ALL temperature variants for this menu
+                        let totalInCartAllTemps = 0;
+                        let totalTempAllTemps = 0;
+                        
+                        Object.keys(cart).forEach(key => {
+                            if (key.startsWith(`${menuId}_`)) {
+                                totalInCartAllTemps += cart[key] || 0;
+                            }
+                        });
+                        
+                        Object.keys(tempQuantity).forEach(key => {
+                            if (key.startsWith(`${menuId}_`)) {
+                                totalTempAllTemps += tempQuantity[key] || 0;
+                            }
+                        });
+                        
+                        const totalWanted = totalTempAllTemps + totalInCartAllTemps + 1;
+                        
+                        if (totalWanted > availableStock) {
+                            console.log('STOCK VALIDATION TRIGGERED:', {
+                                menuId,
+                                availableStock,
+                                totalInCartAllTemps,
+                                totalTempAllTemps,
+                                totalWanted
+                            });
+                            showModernAlert('Jumlah pesananmu melebihi stok kami! 😔', 'error');
+                            return; // STOP - jangan tambah quantity
+                        }
+                    }
+                }
+                
+                tempQuantity[cartKey]++;
+            } else if (tempQuantity[cartKey] > 0) {
+                tempQuantity[cartKey]--;
             }
             
             // Update display saja, belum masuk cart
             updateQuantityDisplay(menuId);
         }
         
+        // Temperature selection
+        if (e.target.closest('.temperature-btn')) {
+            const btn = e.target.closest('.temperature-btn');
+            const menuId = btn.dataset.menuId;
+            const temperature = btn.dataset.temperature;
+            
+            // Update selected temperature for this menu
+            selectedTemperature[menuId] = temperature;
+            
+
+            
+            // Update quantity display to show quantity for this temperature
+            updateQuantityDisplay(menuId);
+            
+            // Update button styles
+            const temperatureContainer = btn.closest('.temperature-options');
+            const allTempBtns = temperatureContainer.querySelectorAll('.temperature-btn');
+            
+            allTempBtns.forEach(tempBtn => {
+                tempBtn.classList.remove('border-indigo-600', 'bg-indigo-600', 'text-white');
+                tempBtn.classList.add('border-gray-300', 'bg-white', 'text-gray-600', 'hover:border-indigo-400');
+            });
+            
+            btn.classList.remove('border-gray-300', 'bg-white', 'text-gray-600', 'hover:border-indigo-400');
+            btn.classList.add('border-indigo-600', 'bg-indigo-600', 'text-white');
+        }
+
         // Add to cart buttons - masukkan tempQuantity ke cart
         if (e.target.closest('.add-to-cart')) {
             const btn = e.target.closest('.add-to-cart');
@@ -2509,21 +2811,69 @@ use Illuminate\Support\Facades\Storage;
                 return;
             }
             
-            // Cek apakah ada quantity yang dipilih
-            const qty = tempQuantity[menuId] || 0;
+            // Cek apakah ada quantity yang dipilih (dengan temperature variant)
+            const currentTemp = selectedTemperature[menuId] || 'normal';
+            const cartKey = `${menuId}_${currentTemp}`;
+            const qty = tempQuantity[cartKey] || 0;
             if (qty === 0) {
                 showModernAlert('Pilih jumlah pesanan dulu ya! Klik tombol + untuk menambah 😊', 'warning');
                 return;
             }
+
+            // Cek stok sebelum menambahkan ke cart - SIMPLE APPROACH
+            const allElements = menuItem.querySelectorAll('*');
+            let availableStock = null;
             
-            // Masukkan ke cart
-            if (!cart[menuId]) {
-                cart[menuId] = 0;
+            for (let element of allElements) {
+                if (element.textContent && element.textContent.includes('Stok:')) {
+                    const match = element.textContent.match(/Stok:\s*(\d+)/);
+                    if (match) {
+                        availableStock = parseInt(match[1]);
+                        break;
+                    }
+                }
             }
-            cart[menuId] += qty;
+            
+            if (availableStock !== null) {
+                // Calculate total across ALL temperature variants for this menu
+                let totalInCartAllTemps = 0;
+                Object.keys(cart).forEach(key => {
+                    if (key.startsWith(`${menuId}_`)) {
+                        totalInCartAllTemps += cart[key] || 0;
+                    }
+                });
+                
+                const totalWanted = totalInCartAllTemps + qty;
+                
+                if (totalWanted > availableStock) {
+                    console.log('ADD TO CART VALIDATION TRIGGERED:', {
+                        menuId,
+                        availableStock,
+                        totalInCartAllTemps,
+                        qty,
+                        totalWanted
+                    });
+                    showModernAlert('Jumlah pesananmu melebihi stok kami! 😔', 'error');
+                    return; // STOP - jangan tambah ke cart
+                }
+            }
+
+            // Cek apakah menu memerlukan pilihan varian
+            const hasTemperature = menuItem.dataset.hasTemperature === 'true';
+            if (hasTemperature && !selectedTemperature[menuId]) {
+                showModernAlert('Pilih varian minuman dulu ya! Ice atau Hot? 🧊🔥', 'warning');
+                return;
+            }
+            
+            // Gunakan cartKey yang sudah dihitung di atas
+            
+            if (!cart[cartKey]) {
+                cart[cartKey] = 0;
+            }
+            cart[cartKey] += qty;
             
             // Reset tempQuantity setelah masuk cart
-            tempQuantity[menuId] = 0;
+            tempQuantity[cartKey] = 0;
             
 
             
@@ -2616,7 +2966,7 @@ use Illuminate\Support\Facades\Storage;
             table_id: parseInt(tableId),
             customer_name: customerName,
             payment_method: paymentMethod,
-            items: {...cart}, // Copy cart object
+            items: cart, // Keep cart object with temperature variants (menuId_temperature format)
             subtotal: totals.subtotal,
             ppn: totals.ppn,
             serviceCharge: totals.serviceCharge,
@@ -2642,9 +2992,9 @@ use Illuminate\Support\Facades\Storage;
         document.getElementById('successModal').classList.add('hidden');
     });
 
-    // Order status modal
-    document.getElementById('footerOrderButton').addEventListener('click', showOrderStatus);
-    document.getElementById('closeOrder').addEventListener('click', hideOrderStatus);
+    // Order details modal
+    document.getElementById('footerOrderButton').addEventListener('click', showOrderDetails);
+    document.getElementById('closeOrderDetails').addEventListener('click', hideOrderDetails);
 
     // Close modals when clicking outside (on backdrop)
     document.addEventListener('click', function(e) {
@@ -2656,14 +3006,15 @@ use Illuminate\Support\Facades\Storage;
             if (e.target.id === 'paymentModal') hidePayment();
         }
         if (e.target.id === 'successModal' || (e.target.closest('#successModal') && !e.target.closest('.bg-white'))) {
-            if (e.target.id === 'successModal') document.getElementById('successModal').classList.add('hidden');
+            if (e.tarsget.id === 'successModal') document.getElementById('successModal').classList.add('hidden');
         }
         if (e.target.id === 'detailsModal' || (e.target.closest('#detailsModal') && !e.target.closest('.bg-white'))) {
             if (e.target.id === 'detailsModal') document.getElementById('detailsModal').classList.add('hidden');
         }
-        if (e.target.id === 'orderModal' || (e.target.closest('#orderModal') && !e.target.closest('.bg-white'))) {
-            if (e.target.id === 'orderModal') hideOrderStatus();
+        if (e.target.id === 'orderDetailsModal' || (e.target.closest('#orderDetailsModal') && !e.target.closest('.bg-white'))) {
+            if (e.target.id === 'orderDetailsModal') hideOrderDetails();
         }
+
     });
 
     // Close modals with Escape key
@@ -2671,7 +3022,7 @@ use Illuminate\Support\Facades\Storage;
         if (e.key === 'Escape') {
             hideCart();
             hidePayment();
-            hideOrderStatus();
+            hideOrderDetails();
             document.getElementById('successModal').classList.add('hidden');
             document.getElementById('detailsModal').classList.add('hidden');
         }

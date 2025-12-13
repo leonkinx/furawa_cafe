@@ -69,6 +69,9 @@ class MenuController extends Controller
             'category' => 'required|in:makanan,minuman,snack',
             'stock' => 'nullable|integer|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'has_temperature_options' => 'nullable|boolean',
+            'temperature_options' => 'nullable|array',
+            'temperature_options.*' => 'in:ice,hot',
         ]);
 
         try {
@@ -94,6 +97,10 @@ class MenuController extends Controller
             $isBestSeller = $request->has('is_best_seller');
             $isAvailable = $request->has('is_available');
 
+            // Handle temperature options
+            $hasTemperatureOptions = $request->has('has_temperature_options') && $request->category === 'minuman';
+            $temperatureOptions = $hasTemperatureOptions ? $request->temperature_options : null;
+
             $menu = Menu::create([
                 'name' => $request->name,
                 'description' => $request->description,
@@ -104,7 +111,9 @@ class MenuController extends Controller
                 'stock' => $stock,
                 'image' => $imagePath,
                 'is_best_seller' => $isBestSeller,
-                'is_available' => $isAvailable
+                'is_available' => $isAvailable,
+                'has_temperature_options' => $hasTemperatureOptions,
+                'temperature_options' => $temperatureOptions
             ]);
 
             return redirect()->route('admin.menus.index')->with('success', 'Menu berhasil ditambahkan!');
@@ -134,6 +143,9 @@ class MenuController extends Controller
             'category' => 'required|in:makanan,minuman,snack',
             'stock' => 'nullable|integer|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'has_temperature_options' => 'nullable|boolean',
+            'temperature_options' => 'nullable|array',
+            'temperature_options.*' => 'in:ice,hot',
         ]);
 
         try {
@@ -169,6 +181,10 @@ class MenuController extends Controller
             $isBestSeller = $request->has('is_best_seller');
             $isAvailable = $request->has('is_available');
 
+            // Handle temperature options
+            $hasTemperatureOptions = $request->has('has_temperature_options') && $request->category === 'minuman';
+            $temperatureOptions = $hasTemperatureOptions ? $request->temperature_options : null;
+
             $menu->update([
                 'name' => $request->name,
                 'description' => $request->description,
@@ -179,7 +195,9 @@ class MenuController extends Controller
                 'stock' => $stock,
                 'image' => $imagePath,
                 'is_best_seller' => $isBestSeller,
-                'is_available' => $isAvailable
+                'is_available' => $isAvailable,
+                'has_temperature_options' => $hasTemperatureOptions,
+                'temperature_options' => $temperatureOptions
             ]);
 
             return redirect()->route('admin.menus.index')->with('success', 'Menu berhasil diupdate!');
@@ -253,6 +271,55 @@ class MenuController extends Controller
             return redirect()->route('admin.menus.index')->with('success', "Menu berhasil $status!");
         } catch (\Exception $e) {
             return redirect()->route('admin.menus.index')->with('error', 'Gagal mengubah status menu: ' . $e->getMessage());
+        }
+    }
+
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'menu_ids' => 'required|array|min:1',
+            'menu_ids.*' => 'exists:menus,id'
+        ]);
+
+        try {
+            $menuIds = $request->menu_ids;
+            $menus = Menu::whereIn('id', $menuIds)->get();
+            
+            $deletedCount = 0;
+            $errors = [];
+
+            foreach ($menus as $menu) {
+                try {
+                    // Delete image if exists
+                    if ($menu->image) {
+                        Storage::disk('public')->delete($menu->image);
+
+                        // Also delete from old public path if exists
+                        $oldPublic = base_path('../public_html/storage/'.$menu->image);
+                        if (file_exists($oldPublic)) {
+                            unlink($oldPublic);
+                        }
+                    }
+
+                    $menu->delete();
+                    $deletedCount++;
+                } catch (\Exception $e) {
+                    $errors[] = "Gagal menghapus menu '{$menu->name}': " . $e->getMessage();
+                }
+            }
+
+            if ($deletedCount > 0) {
+                $message = "Berhasil menghapus {$deletedCount} menu";
+                if (count($errors) > 0) {
+                    $message .= ". Namun ada " . count($errors) . " menu yang gagal dihapus.";
+                }
+                return redirect()->route('admin.menus.index')->with('success', $message);
+            } else {
+                return redirect()->route('admin.menus.index')->with('error', 'Tidak ada menu yang berhasil dihapus: ' . implode(', ', $errors));
+            }
+
+        } catch (\Exception $e) {
+            return redirect()->route('admin.menus.index')->with('error', 'Gagal menghapus menu: ' . $e->getMessage());
         }
     }
 }

@@ -6,9 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Menu;
+use App\Exports\SalesReportExport;
+use App\Exports\SimpleReportExport;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ReportController extends Controller
 {
@@ -158,6 +161,16 @@ class ReportController extends Controller
         ]);
     }
     
+    public function exportExcel(Request $request)
+    {
+        $startDate = $request->get('start_date') ? Carbon::parse($request->start_date)->startOfDay() : Carbon::now()->startOfMonth();
+        $endDate = $request->get('end_date') ? Carbon::parse($request->end_date)->endOfDay() : Carbon::now()->endOfMonth();
+        
+        $filename = 'laporan-transaksi-' . $startDate->format('Y-m-d') . '-to-' . $endDate->format('Y-m-d') . '.xlsx';
+        
+        return Excel::download(new SimpleReportExport($startDate, $endDate), $filename);
+    }
+    
     public function export(Request $request)
     {
         $startDate = $request->get('start_date') ? Carbon::parse($request->start_date)->startOfDay() : Carbon::now()->startOfMonth();
@@ -187,137 +200,133 @@ class ReportController extends Controller
         
         $transactions = $query->orderBy('created_at', 'desc')->get();
         
-        // Hitung total
-        $totalAmount = $transactions->sum('total_amount');
+        // Hitung statistik berdasarkan status (exclude cancelled)
+        $totalAmount = $transactions->whereNotIn('status', ['cancelled'])->sum('total_amount');
         $totalTransactions = $transactions->count();
+        $totalTransactionsExcludeCancelled = $transactions->whereNotIn('status', ['cancelled'])->count();
         
-        // Generate Excel HTML with styling
-        $filename = 'laporan-transaksi-' . $startDate->format('Y-m-d') . '-to-' . $endDate->format('Y-m-d') . '.xls';
+        // Statistik per status
+        $pendingCount = $transactions->where('status', 'pending')->count();
+        $paidCount = $transactions->where('status', 'paid')->count();
+        $processingCount = $transactions->where('status', 'processing')->count();
+        $completedCount = $transactions->where('status', 'completed')->count();
+        $cancelledCount = $transactions->where('status', 'cancelled')->count();
+        
+        $pendingAmount = $transactions->where('status', 'pending')->sum('total_amount');
+        $paidAmount = $transactions->where('status', 'paid')->sum('total_amount');
+        $processingAmount = $transactions->where('status', 'processing')->sum('total_amount');
+        $completedAmount = $transactions->where('status', 'completed')->sum('total_amount');
+        $cancelledAmount = $transactions->where('status', 'cancelled')->sum('total_amount');
+        
+        // Generate clean CSV content
+        $filename = 'laporan-transaksi-' . $startDate->format('Y-m-d') . '-to-' . $endDate->format('Y-m-d') . '.csv';
         
         $headers = [
-            'Content-Type' => 'application/vnd.ms-excel; charset=UTF-8',
+            'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
             'Pragma' => 'no-cache',
             'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
             'Expires' => '0'
         ];
         
-        $html = '
-        <html xmlns:x="urn:schemas-microsoft-com:office:excel">
-        <head>
-            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-            <style>
-                table { border-collapse: collapse; width: 100%; }
-                th { 
-                    background-color: #4472C4; 
-                    color: white; 
-                    font-weight: bold; 
-                    padding: 10px; 
-                    border: 1px solid #2E5C9A;
-                    text-align: center;
-                }
-                td { 
-                    padding: 8px; 
-                    border: 1px solid #D0D0D0;
-                }
-                .header-row { background-color: #E7E6E6; font-weight: bold; }
-                .total-row { background-color: #FFF2CC; font-weight: bold; }
-                .subtotal-row { background-color: #F2F2F2; font-weight: bold; }
-                .text-right { text-align: right; }
-                .text-center { text-align: center; }
-                .status-completed { background-color: #C6EFCE; color: #006100; }
-                .status-processing { background-color: #FFEB9C; color: #9C6500; }
-                .status-pending { background-color: #FFC7CE; color: #9C0006; }
-                .status-cancelled { background-color: #E0E0E0; color: #666666; }
-            </style>
-        </head>
-        <body>
-            <h2>LAPORAN TRANSAKSI DETAIL</h2>
-            <p><strong>Periode:</strong> ' . $startDate->format('d M Y') . ' - ' . $endDate->format('d M Y') . '</p>
-            <p><strong>Total Transaksi:</strong> ' . $totalTransactions . ' | <strong>Total Pendapatan:</strong> Rp ' . number_format($totalAmount, 0, ',', '.') . '</p>
-            <br>
-            <table>
-                <thead>
-                    <tr>
-                        <th>No</th>
-                        <th>No. Pesanan</th>
-                        <th>Tanggal</th>
-                        <th>Customer</th>
-                        <th>Meja</th>
-                        <th>Nama Menu</th>
-                        <th>Qty</th>
-                        <th>Harga Satuan</th>
-                        <th>Subtotal</th>
-                        <th>Total Pesanan</th>
-                        <th>Status</th>
-                        <th>Payment</th>
-                    </tr>
-                </thead>
-                <tbody>';
+        // Build clean tabular CSV content
+        $csvContent = [];
+        
+        // === HEADER SECTION ===
+        $csvContent[] = ['LAPORAN TRANSAKSI FURAWA CAFE'];
+        $csvContent[] = ['Periode: ' . $startDate->format('d M Y') . ' - ' . $endDate->format('d M Y')];
+        $csvContent[] = ['Dicetak pada: ' . now()->format('d M Y H:i:s')];
+        $csvContent[] = [];
+        
+        // === TABEL 1: RINGKASAN STATUS ===
+        $csvContent[] = ['TABEL 1: RINGKASAN BERDASARKAN STATUS'];
+        $csvContent[] = [];
+        $csvContent[] = ['Status Pesanan', 'Jumlah Transaksi', 'Total Nilai (Rp)', 'Persentase (%)'];
+        $csvContent[] = ['==================', '==================', '==================', '=================='];
+        $csvContent[] = ['BELUM BAYAR', $pendingCount, number_format($pendingAmount, 0, ',', '.'), ($totalTransactionsExcludeCancelled > 0 ? round(($pendingCount / $totalTransactionsExcludeCancelled) * 100, 1) : '0')];
+        $csvContent[] = ['SUDAH BAYAR', $paidCount, number_format($paidAmount, 0, ',', '.'), ($totalTransactionsExcludeCancelled > 0 ? round(($paidCount / $totalTransactionsExcludeCancelled) * 100, 1) : '0')];
+        $csvContent[] = ['SEDANG DIPROSES', $processingCount, number_format($processingAmount, 0, ',', '.'), ($totalTransactionsExcludeCancelled > 0 ? round(($processingCount / $totalTransactionsExcludeCancelled) * 100, 1) : '0')];
+        $csvContent[] = ['SELESAI', $completedCount, number_format($completedAmount, 0, ',', '.'), ($totalTransactionsExcludeCancelled > 0 ? round(($completedCount / $totalTransactionsExcludeCancelled) * 100, 1) : '0')];
+        $csvContent[] = ['DIBATALKAN', $cancelledCount, number_format($cancelledAmount, 0, ',', '.'), ($totalTransactions > 0 ? round(($cancelledCount / $totalTransactions) * 100, 1) : '0')];
+        $csvContent[] = ['==================', '==================', '==================', '=================='];
+        $csvContent[] = ['TOTAL KESELURUHAN PENDAPATAN', $totalTransactionsExcludeCancelled, number_format($totalAmount, 0, ',', '.'), '100.0'];
+        $csvContent[] = ['(Tidak termasuk dibatalkan)', '', '', ''];
+        $csvContent[] = [];
+        $csvContent[] = [];
+        
+        // === TABEL 2: DETAIL TRANSAKSI ===
+        $csvContent[] = ['TABEL 2: DETAIL TRANSAKSI'];
+        $csvContent[] = [];
+        $csvContent[] = ['No', 'Kode Pesanan', 'Tanggal & Waktu', 'Nama Customer', 'Meja', 'Menu', 'Qty', 'Harga Satuan', 'Subtotal Item', 'PPN', 'Service Charge', 'Total Pesanan', 'Status', 'Payment'];
+        $csvContent[] = ['===', '================', '==================', '================', '======', '========================', '===', '================', '================', '======', '================', '================', '==========', '======='];
         
         $no = 1;
         foreach ($transactions as $transaction) {
-            $itemCount = $transaction->orderItems->count();
-            $firstItem = true;
-            
-            $statusClass = '';
+            // Status text
+            $statusText = '';
             switch($transaction->status) {
-                case 'completed': $statusClass = 'status-completed'; break;
-                case 'processing': $statusClass = 'status-processing'; break;
-                case 'pending': $statusClass = 'status-pending'; break;
-                case 'cancelled': $statusClass = 'status-cancelled'; break;
+                case 'pending': $statusText = 'BELUM BAYAR'; break;
+                case 'paid': $statusText = 'SUDAH BAYAR'; break;
+                case 'processing': $statusText = 'DIPROSES'; break;
+                case 'completed': $statusText = 'SELESAI'; break;
+                case 'cancelled': $statusText = 'DIBATALKAN'; break;
             }
             
             foreach ($transaction->orderItems as $index => $item) {
-                $html .= '<tr>';
+                $itemSubtotal = $item->quantity * $item->price;
                 
-                // No, Order Code, Date, Customer, Table - hanya di baris pertama
-                if ($firstItem) {
-                    $html .= '<td class="text-center" rowspan="' . ($itemCount + 1) . '">' . $no++ . '</td>';
-                    $html .= '<td rowspan="' . ($itemCount + 1) . '">' . $transaction->order_code . '</td>';
-                    $html .= '<td rowspan="' . ($itemCount + 1) . '">' . $transaction->created_at->format('d M Y H:i') . '</td>';
-                    $html .= '<td rowspan="' . ($itemCount + 1) . '">' . $transaction->customer_name . '</td>';
-                    $html .= '<td class="text-center" rowspan="' . ($itemCount + 1) . '">' . $transaction->table_id . '</td>';
-                    $firstItem = false;
-                }
-                
-                // Item details
-                $html .= '<td>' . $item->menu->name . '</td>';
-                $html .= '<td class="text-center">' . $item->quantity . '</td>';
-                $html .= '<td class="text-right">Rp ' . number_format($item->menu->price, 0, ',', '.') . '</td>';
-                $html .= '<td class="text-right">Rp ' . number_format($item->quantity * $item->menu->price, 0, ',', '.') . '</td>';
-                
-                // Total, Status, Payment - hanya di baris pertama
-                if ($index == 0) {
-                    $html .= '<td class="text-right" rowspan="' . ($itemCount + 1) . '"><strong>Rp ' . number_format($transaction->total_amount, 0, ',', '.') . '</strong></td>';
-                    $html .= '<td class="text-center ' . $statusClass . '" rowspan="' . ($itemCount + 1) . '">' . $transaction->getStatusText() . '</td>';
-                    $html .= '<td class="text-center" rowspan="' . ($itemCount + 1) . '">' . $transaction->getPaymentStatusText() . '</td>';
-                }
-                
-                $html .= '</tr>';
+                $csvContent[] = [
+                    ($index == 0) ? $no : '', // No
+                    ($index == 0) ? $transaction->order_code : '', // Order code
+                    ($index == 0) ? $transaction->created_at->format('d/m/Y H:i') : '', // Date
+                    ($index == 0) ? $transaction->customer_name : '', // Customer
+                    ($index == 0) ? $transaction->table_id : '', // Table
+                    $item->menu->name, // Menu
+                    $item->quantity, // Qty
+                    number_format($item->price, 0, ',', '.'), // Unit price
+                    number_format($itemSubtotal, 0, ',', '.'), // Subtotal
+                    ($index == 0) ? number_format($transaction->ppn_amount ?? 0, 0, ',', '.') : '', // PPN
+                    ($index == 0) ? number_format($transaction->service_charge ?? 0, 0, ',', '.') : '', // Service charge
+                    ($index == 0) ? number_format($transaction->total_amount, 0, ',', '.') : '', // Total
+                    ($index == 0) ? $statusText : '', // Status
+                    ($index == 0) ? 'TUNAI' : '' // Payment
+                ];
             }
-            
-            // Subtotal row untuk setiap transaksi
-            $html .= '<tr class="subtotal-row">
-                <td colspan="3" class="text-right">Subtotal Pesanan:</td>
-                <td class="text-right"><strong>Rp ' . number_format($transaction->total_amount, 0, ',', '.') . '</strong></td>
-            </tr>';
+            $no++;
         }
         
-        $html .= '
-                    <tr class="total-row">
-                        <td colspan="9" class="text-right"><strong>GRAND TOTAL</strong></td>
-                        <td class="text-right"><strong>Rp ' . number_format($totalAmount, 0, ',', '.') . '</strong></td>
-                        <td colspan="2"></td>
-                    </tr>
-                </tbody>
-            </table>
-            <br>
-            <p><em>Dicetak pada: ' . now()->format('d M Y H:i') . '</em></p>
-        </body>
-        </html>';
+        $csvContent[] = ['===', '================', '==================', '================', '======', '========================', '===', '================', '================', '======', '================', '================', '==========', '======='];
+        $csvContent[] = ['GRAND TOTAL PENDAPATAN', '', '', '', '', '', '', '', '', '', '', number_format($totalAmount, 0, ',', '.'), $totalTransactionsExcludeCancelled . ' Transaksi', ''];
+        $csvContent[] = ['(Tidak termasuk pesanan dibatalkan)', '', '', '', '', '', '', '', '', '', '', '', '', ''];
+        $csvContent[] = [];
+        $csvContent[] = [];
         
-        return response($html, 200, $headers);
+        // === TABEL 3: KETERANGAN STATUS ===
+        $csvContent[] = ['TABEL 3: KETERANGAN STATUS'];
+        $csvContent[] = [];
+        $csvContent[] = ['Status', 'Keterangan'];
+        $csvContent[] = ['======', '=========='];
+        $csvContent[] = ['BELUM BAYAR', 'Pesanan dibuat tapi belum dibayar'];
+        $csvContent[] = ['SUDAH BAYAR', 'Pesanan sudah dibayar, menunggu diproses'];
+        $csvContent[] = ['DIPROSES', 'Pesanan sedang disiapkan'];
+        $csvContent[] = ['SELESAI', 'Pesanan sudah selesai dan diserahkan'];
+        $csvContent[] = ['DIBATALKAN', 'Pesanan dibatalkan'];
+        
+        // Convert to CSV string
+        $output = fopen('php://temp', 'r+');
+        
+        // Add BOM for UTF-8
+        fwrite($output, "\xEF\xBB\xBF");
+        
+        foreach ($csvContent as $row) {
+            fputcsv($output, $row, ',', '"');
+        }
+        
+        rewind($output);
+        $csvString = stream_get_contents($output);
+        fclose($output);
+        
+        return response($csvString, 200, $headers);
     }
     
     private function getRevenueChartData($startDate, $endDate)

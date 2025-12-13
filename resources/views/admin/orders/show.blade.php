@@ -15,9 +15,16 @@
                 <p class="text-gray-500 mt-1">{{ $order->created_at->format('d M Y, H:i') }}</p>
             </div>
             <div class="flex items-center gap-3">
+                @if($order->status === 'completed')
                 <button onclick="printReceipt()" class="bg-gray-600 text-white px-4 py-2 rounded-xl hover:bg-gray-700 transition font-medium inline-flex items-center">
                     <i class="fas fa-print mr-2"></i>Cetak Struk
                 </button>
+                @else
+                <button disabled class="bg-gray-300 text-gray-500 px-4 py-2 rounded-xl cursor-not-allowed inline-flex items-center">
+                    <i class="fas fa-print mr-2"></i>Cetak Struk
+                    <span class="ml-2 text-xs">(Pesanan belum selesai)</span>
+                </button>
+                @endif
                 <span class="px-3 py-1 rounded-full text-sm font-medium {{ $order->getStatusBadgeClass() }}">
                     {{ $order->getStatusText() }}
                 </span>
@@ -60,31 +67,130 @@
 
             <!-- Order Items Card -->
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Item Pesanan</h3>
-                <div class="space-y-3">
-                    @foreach($order->orderItems as $item)
-                    <div class="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
-                        <div class="flex items-center gap-4 flex-1">
-                            <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center text-white font-bold">
-                                {{ $item->quantity }}x
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900">Item Pesanan</h3>
+                    <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                        {{ $order->orderItems->count() }} item
+                    </span>
+                </div>
+                
+                <div class="space-y-4">
+                    @foreach($order->orderItems as $index => $item)
+                    <div class="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl p-4 border border-gray-200">
+                        <div class="flex items-start gap-4">
+                            <!-- Item Number -->
+                            <div class="flex-shrink-0">
+                                <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-lg">
+                                    {{ $index + 1 }}
+                                </div>
                             </div>
-                            <div class="flex-1">
-                                <h4 class="font-medium text-gray-900">{{ $item->menu->name }}</h4>
-                                <p class="text-sm text-gray-500">Rp {{ number_format($item->price, 0, ',', '.') }} / item</p>
+                            
+                            <!-- Item Details -->
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex-1">
+                                        <h4 class="font-semibold text-gray-900 text-base mb-2">
+                                            {{ $item->menu->name }}
+                                        </h4>
+                                        
+                                        <!-- Temperature & Category Info -->
+                                        <div class="flex items-center gap-2 mb-3">
+                                            @if($item->temperature)
+                                                <span class="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full
+                                                    {{ $item->temperature === 'ice' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800' }}">
+                                                    @if($item->temperature === 'ice')
+                                                        <i class="fas fa-snowflake mr-1"></i> Ice
+                                                    @elseif($item->temperature === 'hot')
+                                                        <i class="fas fa-fire mr-1"></i> Hot
+                                                    @else
+                                                        {{ ucfirst($item->temperature) }}
+                                                    @endif
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center px-2.5 py-1 text-xs bg-gray-200 text-gray-600 rounded-full">
+                                                    <i class="fas fa-thermometer-half mr-1"></i> Normal
+                                                </span>
+                                            @endif
+                                            
+                                            @if($item->menu->category)
+                                                <span class="inline-flex items-center px-2.5 py-1 text-xs bg-green-100 text-green-800 rounded-full">
+                                                    <i class="fas fa-tag mr-1"></i> {{ ucfirst($item->menu->category) }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                        
+                                        <!-- Price & Quantity Details -->
+                                        <div class="grid grid-cols-3 gap-4 text-sm">
+                                            <div class="bg-white rounded-lg p-2 border">
+                                                <div class="text-gray-500 text-xs mb-1">Harga Satuan</div>
+                                                <div class="font-semibold text-gray-900">Rp {{ number_format($item->price, 0, ',', '.') }}</div>
+                                            </div>
+                                            <div class="bg-white rounded-lg p-2 border">
+                                                <div class="text-gray-500 text-xs mb-1">Quantity</div>
+                                                <div class="font-semibold text-indigo-600">{{ $item->quantity }} pcs</div>
+                                            </div>
+                                            <div class="bg-white rounded-lg p-2 border">
+                                                <div class="text-gray-500 text-xs mb-1">Subtotal</div>
+                                                <div class="font-bold text-green-600">Rp {{ number_format($item->price * $item->quantity, 0, ',', '.') }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="text-right">
-                            <p class="font-semibold text-gray-900">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</p>
                         </div>
                     </div>
                     @endforeach
                 </div>
                 
-                <!-- Total -->
-                <div class="mt-6 pt-4 border-t-2 border-gray-200">
-                    <div class="flex items-center justify-between">
-                        <span class="text-lg font-semibold text-gray-900">Total</span>
-                        <span class="text-2xl font-bold text-blue-600">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</span>
+                <!-- Total Breakdown -->
+                <div class="mt-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200">
+                    <h4 class="font-semibold text-gray-900 mb-4 flex items-center">
+                        <i class="fas fa-calculator mr-2 text-blue-600"></i>
+                        Rincian Pembayaran
+                    </h4>
+                    
+                    <div class="space-y-3">
+                        @if($order->subtotal && $order->subtotal > 0)
+                        <div class="flex items-center justify-between bg-white rounded-lg p-3">
+                            <span class="text-gray-700 flex items-center">
+                                <i class="fas fa-receipt mr-2 text-gray-500 w-4"></i>
+                                Subtotal ({{ $order->orderItems->count() }} item)
+                            </span>
+                            <span class="font-semibold text-gray-900">Rp {{ number_format($order->subtotal, 0, ',', '.') }}</span>
+                        </div>
+                        @endif
+                        
+                        @if($order->ppn_amount && $order->ppn_amount > 0)
+                        <div class="flex items-center justify-between bg-white rounded-lg p-3">
+                            <span class="text-gray-700 flex items-center">
+                                <i class="fas fa-percent mr-2 text-gray-500 w-4"></i>
+                                PPN ({{ number_format($order->ppn_percentage, 1) }}%)
+                            </span>
+                            <span class="font-semibold text-gray-900">Rp {{ number_format($order->ppn_amount, 0, ',', '.') }}</span>
+                        </div>
+                        @endif
+                        
+                        @if($order->service_charge && $order->service_charge > 0)
+                        <div class="flex items-center justify-between bg-white rounded-lg p-3">
+                            <span class="text-gray-700 flex items-center">
+                                <i class="fas fa-concierge-bell mr-2 text-gray-500 w-4"></i>
+                                Service Charge ({{ number_format($order->service_charge_percentage, 1) }}%)
+                            </span>
+                            <span class="font-semibold text-gray-900">Rp {{ number_format($order->service_charge, 0, ',', '.') }}</span>
+                        </div>
+                        @endif
+                        
+                        <div class="bg-gradient-to-r from-indigo-600 to-blue-600 rounded-lg p-4 text-white">
+                            <div class="flex items-center justify-between">
+                                <span class="text-lg font-bold flex items-center">
+                                    <i class="fas fa-money-bill-wave mr-2"></i>
+                                    Total Pembayaran
+                                </span>
+                                <span class="text-2xl font-bold">
+                                    Rp {{ number_format($order->total_amount, 0, ',', '.') }}
+                                </span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -226,7 +332,16 @@
             <table style="width: 100%; font-size: 12px;">
                 @foreach($order->orderItems as $item)
                 <tr>
-                    <td colspan="3" style="padding: 5px 0;">{{ $item->menu->name }}</td>
+                    <td colspan="3" style="padding: 5px 0;">
+                        {{ $item->menu->name }}
+                        @if($item->temperature)
+                            @if($item->temperature === 'ice')
+                                (Ice)
+                            @elseif($item->temperature === 'hot')
+                                (Hot)
+                            @endif
+                        @endif
+                    </td>
                 </tr>
                 <tr>
                     <td style="padding-left: 10px;">{{ $item->quantity }} x Rp {{ number_format($item->price, 0, ',', '.') }}</td>
@@ -237,12 +352,33 @@
             </table>
         </div>
 
-        <!-- Total -->
-        <div style="margin-bottom: 10px; font-size: 14px;">
+        <!-- Total Breakdown -->
+        <div style="margin-bottom: 10px; font-size: 12px;">
             <table style="width: 100%;">
+                @if($order->subtotal && $order->subtotal > 0)
                 <tr>
-                    <td style="font-weight: bold;">TOTAL</td>
-                    <td style="text-align: right; font-weight: bold; font-size: 16px;">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</td>
+                    <td>Subtotal</td>
+                    <td style="text-align: right;">Rp {{ number_format($order->subtotal, 0, ',', '.') }}</td>
+                </tr>
+                @endif
+                
+                @if($order->ppn_amount && $order->ppn_amount > 0)
+                <tr>
+                    <td>PPN ({{ number_format($order->ppn_percentage, 1) }}%)</td>
+                    <td style="text-align: right;">Rp {{ number_format($order->ppn_amount, 0, ',', '.') }}</td>
+                </tr>
+                @endif
+                
+                @if($order->service_charge && $order->service_charge > 0)
+                <tr>
+                    <td>Service Charge ({{ number_format($order->service_charge_percentage, 1) }}%)</td>
+                    <td style="text-align: right;">Rp {{ number_format($order->service_charge, 0, ',', '.') }}</td>
+                </tr>
+                @endif
+                
+                <tr style="border-top: 1px dashed #000;">
+                    <td style="font-weight: bold; padding-top: 5px;">TOTAL</td>
+                    <td style="text-align: right; font-weight: bold; font-size: 14px; padding-top: 5px;">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</td>
                 </tr>
                 <tr>
                     <td>Pembayaran</td>

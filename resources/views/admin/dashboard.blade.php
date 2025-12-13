@@ -176,23 +176,6 @@
             <a href="{{ route('admin.orders.index') }}" class="text-sm text-blue-600 hover:text-blue-800">Lihat Semua</a>
         </div>
         <div class="space-y-4">
-            @if($recent_orders && $recent_orders->count() > 0)
-                @foreach($recent_orders as $order)
-                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition duration-150">
-                    <div>
-                        <h4 class="text-sm font-medium text-gray-900">#{{ $order->order_code }}</h4>
-                        <p class="text-xs text-gray-500">Meja {{ $order->table_id }} • {{ $order->customer_name }}</p>
-                        <p class="text-xs text-gray-400 mt-1">{{ $order->created_at->diffForHumans() }}</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-sm font-semibold text-gray-900">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</p>
-                        <span class="inline-block px-2 py-1 text-xs rounded-full {{ $order->getStatusBadgeClass() }}">
-                            {{ $order->getStatusText() }}
-                        </span>
-                    </div>
-                </div>
-                @endforeach
-            @else
             <div class="text-center py-8 text-gray-500">
                 <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
                     <i class="fas fa-receipt text-2xl text-gray-400"></i>
@@ -200,7 +183,6 @@
                 <p class="text-sm font-medium text-gray-700">Belum Ada Pesanan</p>
                 <p class="text-xs text-gray-500 mt-1">Pesanan baru akan muncul di sini</p>
             </div>
-            @endif
         </div>
     </div>
 </div>

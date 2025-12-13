@@ -162,14 +162,41 @@
     </div>
     @endif
 
+    <!-- Bulk Actions Toolbar -->
+    <div id="bulkActionsToolbar" class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4 hidden">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <span id="selectedCount" class="text-sm font-medium text-blue-800">0 item dipilih</span>
+                <button type="button" id="selectAllBtn" class="text-xs text-blue-600 hover:text-blue-800">Pilih Semua</button>
+                <button type="button" id="deselectAllBtn" class="text-xs text-blue-600 hover:text-blue-800">Batal Pilih</button>
+            </div>
+            <div class="flex items-center gap-2">
+                <button type="button" id="bulkDeleteBtn" class="px-3 py-1.5 bg-red-600 text-white text-xs rounded hover:bg-red-700 flex items-center gap-1">
+                    <i class="fas fa-trash text-xs"></i>
+                    Hapus Terpilih
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Bulk Delete Form -->
+    <form id="bulkDeleteForm" action="{{ route('admin.menus.bulk-delete') }}" method="POST" style="display: none;">
+        @csrf
+        @method('DELETE')
+        <div id="bulkDeleteInputs"></div>
+    </form>
+
     <!-- Table -->
     <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
         <div class="overflow-x-auto -mx-4 sm:mx-0">
             <div class="inline-block min-w-full align-middle">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Gambar</th>
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-2 sm:px-4 py-2 sm:py-3 text-left">
+                                    <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                </th>
+                                <th class="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Gambar</th>
                             <th class="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Nama Menu</th>
                             <th class="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Kategori</th>
                             <th class="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Harga</th>
@@ -180,7 +207,10 @@
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($menus as $menu)
-                        <tr class="hover:bg-gray-50">
+                        <tr class="hover:bg-gray-50" data-menu-id="{{ $menu->id }}">
+                            <td class="px-2 sm:px-4 py-2 sm:py-3">
+                                <input type="checkbox" name="menu_ids[]" value="{{ $menu->id }}" class="menu-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                            </td>
                             <td class="px-2 sm:px-4 py-2 sm:py-3">
                                 @if($menu->image)
                                     @php
@@ -293,7 +323,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="7" class="px-4 py-12 text-center">
+                            <td colspan="8" class="px-4 py-12 text-center">
                                 <div class="flex flex-col items-center text-gray-400">
                                     <i class="fas fa-utensils text-3xl mb-2"></i>
                                     <p class="text-sm text-gray-500">Belum ada menu</p>
@@ -348,4 +378,119 @@
     </div>
     @endif
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAllCheckbox = document.getElementById('selectAll');
+    const menuCheckboxes = document.querySelectorAll('.menu-checkbox');
+    const bulkActionsToolbar = document.getElementById('bulkActionsToolbar');
+    const selectedCountSpan = document.getElementById('selectedCount');
+    const selectAllBtn = document.getElementById('selectAllBtn');
+    const deselectAllBtn = document.getElementById('deselectAllBtn');
+    const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+    const bulkDeleteForm = document.getElementById('bulkDeleteForm');
+
+    // Update toolbar visibility and selected count
+    function updateBulkActions() {
+        const checkedBoxes = document.querySelectorAll('.menu-checkbox:checked');
+        const count = checkedBoxes.length;
+        
+        if (count > 0) {
+            bulkActionsToolbar.classList.remove('hidden');
+            selectedCountSpan.textContent = `${count} item dipilih`;
+        } else {
+            bulkActionsToolbar.classList.add('hidden');
+        }
+        
+        // Update select all checkbox state
+        if (count === 0) {
+            selectAllCheckbox.indeterminate = false;
+            selectAllCheckbox.checked = false;
+        } else if (count === menuCheckboxes.length) {
+            selectAllCheckbox.indeterminate = false;
+            selectAllCheckbox.checked = true;
+        } else {
+            selectAllCheckbox.indeterminate = true;
+            selectAllCheckbox.checked = false;
+        }
+    }
+
+    // Select all functionality
+    selectAllCheckbox.addEventListener('change', function() {
+        const isChecked = this.checked;
+        menuCheckboxes.forEach(checkbox => {
+            checkbox.checked = isChecked;
+        });
+        updateBulkActions();
+    });
+
+    // Individual checkbox change
+    menuCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateBulkActions);
+    });
+
+    // Select all button
+    selectAllBtn.addEventListener('click', function() {
+        menuCheckboxes.forEach(checkbox => {
+            checkbox.checked = true;
+        });
+        updateBulkActions();
+    });
+
+    // Deselect all button
+    deselectAllBtn.addEventListener('click', function() {
+        menuCheckboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        updateBulkActions();
+    });
+
+    // Bulk delete button
+    bulkDeleteBtn.addEventListener('click', function() {
+        const checkedBoxes = document.querySelectorAll('.menu-checkbox:checked');
+        const count = checkedBoxes.length;
+        
+        if (count === 0) {
+            alert('Pilih minimal 1 menu untuk dihapus');
+            return;
+        }
+        
+        const menuNames = Array.from(checkedBoxes).map(checkbox => {
+            const row = checkbox.closest('tr');
+            const nameCell = row.querySelector('td:nth-child(3) .text-gray-900');
+            return nameCell ? nameCell.textContent.trim() : 'Menu';
+        });
+        
+        const confirmMessage = count === 1 
+            ? `Yakin ingin menghapus menu "${menuNames[0]}"?`
+            : `Yakin ingin menghapus ${count} menu terpilih?\n\nMenu yang akan dihapus:\n${menuNames.slice(0, 5).join('\n')}${count > 5 ? `\n... dan ${count - 5} menu lainnya` : ''}`;
+        
+        if (confirm(confirmMessage)) {
+            // Show loading state
+            bulkDeleteBtn.disabled = true;
+            bulkDeleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin text-xs"></i> Menghapus...';
+            
+            // Clear previous inputs
+            const bulkDeleteInputs = document.getElementById('bulkDeleteInputs');
+            bulkDeleteInputs.innerHTML = '';
+            
+            // Add selected menu IDs to hidden form
+            checkedBoxes.forEach(checkbox => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'menu_ids[]';
+                input.value = checkbox.value;
+                bulkDeleteInputs.appendChild(input);
+            });
+            
+            // Submit form
+            bulkDeleteForm.submit();
+        }
+    });
+
+    // Initial update
+    updateBulkActions();
+});
+</script>
+
 @endsection

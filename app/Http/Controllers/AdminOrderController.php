@@ -271,6 +271,12 @@ class AdminOrderController extends Controller
                     Log::info('Auto-updating payment_status to paid for completed order');
                 }
                 
+                // 3. Jika status cancelled, payment_status HARUS failed
+                if ($order->status === 'cancelled') {
+                    $order->payment_status = 'failed';
+                    Log::info('Auto-updating payment_status to failed for cancelled order');
+                }
+                
                 // Simpan perubahan
                 $saved = $order->save();
                 

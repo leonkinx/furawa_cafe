@@ -218,9 +218,11 @@
         <div class="px-3 sm:px-6 py-4 border-b border-gray-200">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4">
                 <h3 class="text-base sm:text-lg font-semibold text-gray-800">Detail Transaksi</h3>
-                <a href="{{ route('admin.reports.export', array_merge(request()->all())) }}" class="bg-green-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-green-700 transition duration-200 flex items-center justify-center text-xs sm:text-sm">
-                    <i class="fas fa-file-excel mr-2"></i>Export Excel
-                </a>
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <a href="{{ route('admin.reports.export.excel', array_merge(request()->all())) }}" class="bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200 flex items-center justify-center text-xs sm:text-sm">
+                        <i class="fas fa-file-excel mr-2"></i>Export Excel (Detail)
+                    </a>
+                </div>
             </div>
             
             <!-- Search & Filter -->
